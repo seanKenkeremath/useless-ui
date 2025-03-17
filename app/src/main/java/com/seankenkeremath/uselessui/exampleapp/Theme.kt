@@ -1,6 +1,5 @@
-package com.seankenkeremath.uselessui.ui.theme
+package com.seankenkeremath.uselessui.exampleapp
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
