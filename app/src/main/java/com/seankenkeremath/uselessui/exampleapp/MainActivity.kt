@@ -46,6 +46,7 @@ class MainActivity : ComponentActivity() {
 fun DemoScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val clickCount = remember { mutableStateOf(0) }
+    val isShattered = remember { mutableStateOf(false) }
 
     val shatterBitmap = remember {
         ContextCompat.getDrawable(context, R.drawable.ic_launcher_background)?.toBitmap()?.asImageBitmap()
@@ -66,8 +67,23 @@ fun DemoScreen(modifier: Modifier = Modifier) {
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(text = "Tap the image to shatter, tap again to reverse")
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        UselessButton(
+            text = if (isShattered.value) "Reverse Shatter" else "Shatter",
+            onClick = { isShattered.value = !isShattered.value }
+        )
 
-        GlassShatterEffect(shatterBitmap!!)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        GlassShatterEffect(
+            bitmap = shatterBitmap!!,
+            isShattered = isShattered.value,
+            onShatterStateChanged = { isShattered.value = it }
+        )
     }
 }
 
