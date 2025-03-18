@@ -10,9 +10,7 @@ import android.graphics.RectF
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,9 +27,7 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -67,14 +63,14 @@ private fun computeOutwardDirection(center: Offset, shardCenter: Offset): Pair<F
 
 @Composable
 private fun ShatteredPiece(
-    shard: ShatteredFragment, 
+    shard: ShatteredFragment,
     impactPoint: Offset,
     isShattered: Boolean
 ) {
-    var shattered by remember { mutableStateOf(isShattered)}
+    var shattered by remember { mutableStateOf(isShattered) }
     val direction = remember { computeOutwardDirection(impactPoint, shard.center) }
     val velocity = remember { Random.nextFloat() * 200f + 100f }
-    
+
     val rotationXTarget = remember { (Random.nextFloat() * 60f - 30f) * 4 }
     val rotationYTarget = remember { (Random.nextFloat() * 60f - 30f) * 4 }
     val rotationZTarget = remember { (Random.nextFloat() * 60f - 30f) * 4 }
@@ -84,11 +80,11 @@ private fun ShatteredPiece(
         animationSpec = tween(durationMillis = 2000),
         label = "shatter",
     )
-    
+
     LaunchedEffect(isShattered) {
         shattered = !shattered
     }
-    
+
     Image(
         bitmap = shard.bitmap,
         contentDescription = null,
@@ -96,7 +92,8 @@ private fun ShatteredPiece(
             .graphicsLayer {
                 translationX = progress * direction.first * velocity
                 translationY = progress * direction.second * velocity
-                transformOrigin = TransformOrigin(shard.boundingCenterFractionX, shard.boundingCenterFractionY)
+                transformOrigin =
+                    TransformOrigin(shard.boundingCenterFractionX, shard.boundingCenterFractionY)
                 rotationX = progress * rotationXTarget
                 rotationY = progress * rotationYTarget
                 rotationZ = progress * rotationZTarget
@@ -108,19 +105,24 @@ private fun ShatteredPiece(
 
 @Composable
 fun GlassShatterEffect(
-    bitmap: ImageBitmap, 
+    bitmap: ImageBitmap,
     modifier: Modifier = Modifier,
     isShattered: Boolean = false,
-    onShatterStateChanged: ((Boolean) -> Unit)? = null
+    shatterCenter: Offset = Offset.Unspecified,
 ) {
     val b = remember {
         bitmap
     }
 
-    var impactPoint by remember { mutableStateOf(Offset.Zero) }
+    val impactPoint = remember {
+        if (shatterCenter == Offset.Unspecified) Offset(
+            bitmap.width / 2f,
+            bitmap.height / 2f
+        ) else shatterCenter
+    }
     var shattered by remember { mutableStateOf(isShattered) }
     var hasBeenShattered by remember { mutableStateOf(false) }
-    
+
     LaunchedEffect(isShattered) {
         if (shattered != isShattered) {
             shattered = isShattered
@@ -145,24 +147,13 @@ fun GlassShatterEffect(
 
     Box(
         modifier = modifier
-            .size(b.width.dp, b.height.dp)
-            .pointerInput(Unit) {
-                detectTapGestures { tapPosition ->
-                    if (!hasBeenShattered) {
-                        impactPoint = tapPosition
-                    }
-                    shattered = !shattered
-                    hasBeenShattered = true
-                    onShatterStateChanged?.invoke(shattered)
-                }
-            }
     ) {
         if (!hasBeenShattered) {
             Image(bitmap = bitmap, contentDescription = null)
         } else {
             shards.forEach { shard ->
                 ShatteredPiece(
-                    shard = shard, 
+                    shard = shard,
                     impactPoint = impactPoint,
                     isShattered = !shattered
                 )
