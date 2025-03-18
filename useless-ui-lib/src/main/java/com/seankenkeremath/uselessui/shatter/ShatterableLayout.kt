@@ -21,23 +21,55 @@ import androidx.core.graphics.createBitmap
  *
  * @param isShattered Whether the content should be shattered. Changing this value will trigger an animation to that state.
  * @param modifier Modifier to be applied to the layout
+ * @param contentKey A key to invalidate the content bitmap
+ * @param captureMode Controls when the content bitmap is captured
  * @param content The content to be displayed and potentially shattered
  */
 @Composable
 fun ShatterableLayout(
     isShattered: Boolean,
     modifier: Modifier = Modifier,
+    contentKey: Any? = null,
+    captureMode: CaptureMode = CaptureMode.AUTO,
     content: @Composable () -> Unit
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
     var contentBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var shattered by remember { mutableStateOf(isShattered) }
     var hasBeenShattered by remember { mutableStateOf(false) }
-
+    var needsRecapture by remember { mutableStateOf(false) }
+    
+    // Invalidate bitmap when content key changes
+    LaunchedEffect(contentKey) {
+        if (captureMode != CaptureMode.LAZY) {
+            if (!isShattered) {
+                contentBitmap = null
+            } else {
+                needsRecapture = true
+            }
+        }
+    }
+    
+    // Handle size changes
+    LaunchedEffect(size) {
+        if (contentBitmap != null && 
+            (contentBitmap!!.width != size.width || 
+             contentBitmap!!.height != size.height)) {
+            contentBitmap = null
+        }
+    }
+    
+    // Handle shatter state changes
     LaunchedEffect(isShattered) {
         if (shattered != isShattered) {
             shattered = isShattered
             if (isShattered) {
+                // For LAZY mode, only capture when transitioning to shattered state for the first time
+                // Once it's been shattered we shouldn't recapture
+                if (!hasBeenShattered && (captureMode == CaptureMode.LAZY || needsRecapture)) {
+                    contentBitmap = null
+                    needsRecapture = false
+                }
                 hasBeenShattered = true
             }
         }
@@ -86,4 +118,24 @@ fun ShatterableLayout(
             content()
         }
     }
+}
+
+/**
+ * Controls when the content bitmap is captured in ShatterableLayout
+ */
+enum class CaptureMode {
+    /**
+     * Automatically recapture when content key changes or size changes
+     */
+    AUTO,
+    
+    /**
+     * Only capture the bitmap when transitioning to the shattered state
+     */
+    LAZY,
+    
+    /**
+     * Capture once and reuse the bitmap until explicitly invalidated via contentKey
+     */
+    ONCE
 } 

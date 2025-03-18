@@ -4,6 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,7 +34,9 @@ import androidx.core.graphics.drawable.toBitmap
 import com.seankenkeremath.uselessui.R
 import com.seankenkeremath.uselessui.UselessButton
 import com.seankenkeremath.uselessui.exampleapp.theme.UselessUITheme
+import com.seankenkeremath.uselessui.shatter.CaptureMode
 import com.seankenkeremath.uselessui.shatter.ShatterableLayout
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,13 +54,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun DemoScreen(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
     val clickCount = remember { mutableStateOf(0) }
     val isShattered = remember { mutableStateOf(false) }
-
-    val shatterBitmap = remember {
-        ContextCompat.getDrawable(context, R.drawable.ic_launcher_background)?.toBitmap()?.asImageBitmap()
-    }
 
     Column(
         modifier = modifier
@@ -82,7 +84,21 @@ fun DemoScreen(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        val repeatedValue by rememberInfiniteTransition().animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 1200,
+                )
+            )
+        )
+
+        val text = "Shatter Me!"
+        val displayedText = text.substring(0, (text.length * repeatedValue).roundToInt())
+
         ShatterableLayout(
+            captureMode = CaptureMode.LAZY,
             isShattered = isShattered.value,
         ) {
             Box(
@@ -92,7 +108,7 @@ fun DemoScreen(modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Shatter Me!",
+                    text = displayedText,
                     color = MaterialTheme.colorScheme.onPrimary,
                     style = MaterialTheme.typography.headlineMedium
                 )
