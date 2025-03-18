@@ -1,5 +1,7 @@
 package com.seankenkeremath.uselessui.shatter
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,16 +42,19 @@ fun ShatterableLayout(
     var shattered by remember { mutableStateOf(isShattered) }
     var hasBeenShattered by remember { mutableStateOf(isShattered) }
     var needsRecapture by remember { mutableStateOf(false) }
-    val onAnimationComplete = remember<(Boolean) -> Unit>{
-        { shattered ->
-            if (!shattered) {
+
+    val progress by animateFloatAsState(
+        targetValue = if (shattered) 1f else 0f,
+        animationSpec = tween(durationMillis = 2000),
+        label = "shatter",
+        finishedListener = { float ->
+            if (float == 0f) {
                 if (continueWhenReassembled) {
                     hasBeenShattered = false
                 }
             }
         }
-
-    }
+    )
 
     // Invalidate bitmap when content key changes
     LaunchedEffect(contentKey) {
@@ -124,9 +129,8 @@ fun ShatterableLayout(
             // If we have the bitmap and have shattered, show the shattered version
             ShatteredImage(
                 bitmap = contentBitmap!!,
-                isShattered = shattered,
-                initiallyShattered = false,
-                onAnimationCompleted = onAnimationComplete
+                progress = progress,
+                hasBeenShattered = hasBeenShattered,
             )
         } else {
             // Otherwise show the normal content

@@ -7,17 +7,11 @@ import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
@@ -67,41 +61,16 @@ private fun ShatteredPiece(
 @Composable
 internal fun ShatteredImage(
     bitmap: ImageBitmap,
+    progress: Float,
+    hasBeenShattered: Boolean,
     modifier: Modifier = Modifier,
-    isShattered: Boolean = false,
-    initiallyShattered: Boolean = isShattered,
     shatterCenter: Offset = Offset.Unspecified,
-    onAnimationCompleted: (shattered: Boolean) -> Unit = {}
 ) {
-    val impactPoint = remember {
+    val impactPoint = remember(shatterCenter, bitmap) {
         if (shatterCenter == Offset.Unspecified) Offset(
             bitmap.width / 2f,
             bitmap.height / 2f
         ) else shatterCenter
-    }
-
-    var shattered by remember { mutableStateOf(initiallyShattered) }
-    var hasBeenShattered by remember { mutableStateOf(initiallyShattered) }
-    val animationListener = remember {
-        { progress: Float ->
-            onAnimationCompleted(progress == 1f)
-        }
-    }
-
-    val progress by animateFloatAsState(
-        targetValue = if (shattered) 1f else 0f,
-        animationSpec = tween(durationMillis = 2000),
-        label = "shatter",
-        finishedListener = animationListener
-    )
-
-    LaunchedEffect(isShattered) {
-        if (isShattered) {
-            hasBeenShattered = true
-            shattered = true
-        } else {
-            shattered = false
-        }
     }
 
     val width = bitmap.width.toFloat()
@@ -174,7 +143,7 @@ private fun ShatteredImageComposablePreview() {
 
     Surface {
         Box {
-            ShatteredImage(bitmap = bitmap, isShattered = true, initiallyShattered = false)
+            ShatteredImage(bitmap = bitmap, hasBeenShattered = true, progress = .5f)
         }
     }
 }
