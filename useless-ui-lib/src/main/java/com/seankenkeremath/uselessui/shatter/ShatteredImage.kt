@@ -37,25 +37,14 @@ import kotlin.random.Random
 private fun ShatteredPiece(
     shard: ShatteredFragment,
     impactPoint: Offset,
-    isShattered: Boolean
+    progress: Float,
 ) {
-    var shattered by remember { mutableStateOf(isShattered) }
     val direction = remember { computeOutwardDirection(impactPoint, shard.center) }
     val velocity = remember { Random.nextFloat() * 200f + 100f }
 
     val rotationXTarget = remember { (Random.nextFloat() * 60f - 30f) * 4 }
     val rotationYTarget = remember { (Random.nextFloat() * 60f - 30f) * 4 }
     val rotationZTarget = remember { (Random.nextFloat() * 60f - 30f) * 4 }
-
-    val progress by animateFloatAsState(
-        targetValue = if (shattered) 1f else 0f,
-        animationSpec = tween(durationMillis = 2000),
-        label = "shatter",
-    )
-
-    LaunchedEffect(isShattered) {
-        shattered = !shattered
-    }
 
     Image(
         bitmap = shard.bitmap,
@@ -76,41 +65,52 @@ private fun ShatteredPiece(
 }
 
 @Composable
-fun ShatteredImage(
+internal fun ShatteredImage(
     bitmap: ImageBitmap,
     modifier: Modifier = Modifier,
     isShattered: Boolean = false,
+    initiallyShattered: Boolean = isShattered,
     shatterCenter: Offset = Offset.Unspecified,
+    onAnimationCompleted: (shattered: Boolean) -> Unit = {}
 ) {
-    val b = remember {
-        bitmap
-    }
-
     val impactPoint = remember {
         if (shatterCenter == Offset.Unspecified) Offset(
             bitmap.width / 2f,
             bitmap.height / 2f
         ) else shatterCenter
     }
-    var shattered by remember { mutableStateOf(isShattered) }
-    var hasBeenShattered by remember { mutableStateOf(isShattered) }
+
+    var shattered by remember { mutableStateOf(initiallyShattered) }
+    var hasBeenShattered by remember { mutableStateOf(initiallyShattered) }
+    val animationListener = remember {
+        { progress: Float ->
+            onAnimationCompleted(progress == 1f)
+        }
+    }
+
+    val progress by animateFloatAsState(
+        targetValue = if (shattered) 1f else 0f,
+        animationSpec = tween(durationMillis = 2000),
+        label = "shatter",
+        finishedListener = animationListener
+    )
 
     LaunchedEffect(isShattered) {
-        if (shattered != isShattered) {
-            shattered = isShattered
-            if (isShattered) {
-                hasBeenShattered = true
-            }
+        if (isShattered) {
+            hasBeenShattered = true
+            shattered = true
+        } else {
+            shattered = false
         }
     }
 
     val width = bitmap.width.toFloat()
     val height = bitmap.height.toFloat()
-    val shards = remember {
-        generateVoronoiShards(10, b.width.toFloat(), b.height.toFloat()).map { path ->
+    val shards = remember(bitmap) {
+        generateVoronoiShards(10, bitmap.width.toFloat(), bitmap.height.toFloat()).map { path ->
             ShatteredFragment(
                 path = path.path,
-                bitmap = cropBitmap(b, path.path, width.toInt(), height.toInt()),
+                bitmap = cropBitmap(bitmap, path.path, width.toInt(), height.toInt()),
                 vertices = path.vertices,
                 boundingRect = RectF(0f, 0f, width, height)
             )
@@ -127,7 +127,7 @@ fun ShatteredImage(
                 ShatteredPiece(
                     shard = shard,
                     impactPoint = impactPoint,
-                    isShattered = !shattered
+                    progress = progress
                 )
             }
         }
@@ -149,7 +149,7 @@ private data class ShatteredFragment(
             return Offset(centroidX.toFloat(), centroidY.toFloat())
         }
 
-    // At what fraction from 0 to 1f is the center of our shape relative to the bounding box
+    // What fraction from 0f to 1f is the center of our shape in our bounding box in x and y
     // For instance, a normal rectangle would be (.5, .5), but within our bounding box the "center"
     // of a shard is a different location in the bounding box.
     val boundingCenterFractionX: Float
@@ -168,13 +168,13 @@ private fun ShatteredImageComposablePreview() {
         createColoredBitmap(
             1000,
             1000,
-            android.graphics.Color.argb(255, 255, 0, 255)
+            Color.argb(255, 255, 0, 255)
         ).asImageBitmap()
     }
 
     Surface {
         Box {
-            ShatteredImage(bitmap = bitmap, isShattered = true)
+            ShatteredImage(bitmap = bitmap, isShattered = true, initiallyShattered = false)
         }
     }
 }

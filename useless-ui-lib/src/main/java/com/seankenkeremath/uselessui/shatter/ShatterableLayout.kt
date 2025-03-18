@@ -42,7 +42,7 @@ fun ShatterableLayout(
     // Invalidate bitmap when content key changes
     LaunchedEffect(contentKey) {
         if (captureMode != CaptureMode.LAZY) {
-            if (!isShattered) {
+            if (!shattered) {
                 contentBitmap = null
             } else {
                 needsRecapture = true
@@ -107,11 +107,12 @@ fun ShatterableLayout(
                     }
                 }
             )
-        } else if (contentBitmap != null && (isShattered || hasBeenShattered)) {
+        } else if (contentBitmap != null && (shattered || hasBeenShattered)) {
             // If we have the bitmap and have shattered, show the shattered version
             ShatteredImage(
                 bitmap = contentBitmap!!,
-                isShattered = shattered
+                isShattered = shattered,
+                initiallyShattered = false
             )
         } else {
             // Otherwise show the normal content
