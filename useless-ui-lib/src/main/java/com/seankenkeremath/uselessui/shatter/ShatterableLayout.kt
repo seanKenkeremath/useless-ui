@@ -18,14 +18,14 @@ import androidx.core.graphics.createBitmap
 
 /**
  * A composable that can shatter its content when triggered.
- * 
- * @param isShattered Whether the content should be shattered
+ *
+ * @param isShattered Whether the content should be shattered. Changing this value will trigger an animation to that state.
  * @param modifier Modifier to be applied to the layout
  * @param content The content to be displayed and potentially shattered
  */
 @Composable
 fun ShatterableLayout(
-    isShattered: Boolean = false,
+    isShattered: Boolean,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
@@ -42,7 +42,7 @@ fun ShatterableLayout(
             }
         }
     }
-    
+
     Box(
         modifier = modifier
             .onGloballyPositioned { coordinates ->
@@ -62,7 +62,7 @@ fun ShatterableLayout(
                                 content()
                             }
                         }
-                        
+
                         // Capture the bitmap after layout
                         post {
                             if (width > 0 && height > 0) {
@@ -77,7 +77,7 @@ fun ShatterableLayout(
             )
         } else if (contentBitmap != null && (isShattered || hasBeenShattered)) {
             // If we have the bitmap and have shattered, show the shattered version
-            GlassShatterEffect(
+            ShatteredImage(
                 bitmap = contentBitmap!!,
                 isShattered = shattered
             )

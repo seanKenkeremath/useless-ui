@@ -33,34 +33,6 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 
-private fun cropBitmap(bitmap: ImageBitmap, path: Path, width: Int, height: Int): ImageBitmap {
-    val resultBitmap = createBitmap(width, height)
-    val canvas = android.graphics.Canvas(resultBitmap)
-
-    val paint = Paint().apply {
-        isAntiAlias = true
-    }
-    canvas.drawPath(path.asAndroidPath(), paint)
-    paint.apply {
-        xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
-    }
-    canvas.drawBitmap(bitmap.asAndroidBitmap(), 0f, 0f, paint)
-
-    return resultBitmap.asImageBitmap()
-}
-
-private fun computeOutwardDirection(center: Offset, shardCenter: Offset): Pair<Float, Float> {
-    val dx = shardCenter.x - center.x
-    val dy = shardCenter.y - center.y
-    val distance = sqrt(dx * dx + dy * dy)
-
-    return if (distance > 0f) {
-        Pair(dx / distance, dy / distance) // Normalize vector
-    } else {
-        Pair(0f, 0f) // Prevent division by zero
-    }
-}
-
 @Composable
 private fun ShatteredPiece(
     shard: ShatteredFragment,
@@ -104,7 +76,7 @@ private fun ShatteredPiece(
 }
 
 @Composable
-fun GlassShatterEffect(
+fun ShatteredImage(
     bitmap: ImageBitmap,
     modifier: Modifier = Modifier,
     isShattered: Boolean = false,
@@ -121,7 +93,7 @@ fun GlassShatterEffect(
         ) else shatterCenter
     }
     var shattered by remember { mutableStateOf(isShattered) }
-    var hasBeenShattered by remember { mutableStateOf(false) }
+    var hasBeenShattered by remember { mutableStateOf(isShattered) }
 
     LaunchedEffect(isShattered) {
         if (shattered != isShattered) {
@@ -191,7 +163,7 @@ private data class ShatteredFragment(
 
 @Preview
 @Composable
-private fun GlassShatterComposablePreview() {
+private fun ShatteredImageComposablePreview() {
     val bitmap = remember {
         createColoredBitmap(
             1000,
@@ -202,8 +174,36 @@ private fun GlassShatterComposablePreview() {
 
     Surface {
         Box {
-            GlassShatterEffect(bitmap = bitmap)
+            ShatteredImage(bitmap = bitmap, isShattered = true)
         }
+    }
+}
+
+private fun cropBitmap(bitmap: ImageBitmap, path: Path, width: Int, height: Int): ImageBitmap {
+    val resultBitmap = createBitmap(width, height)
+    val canvas = android.graphics.Canvas(resultBitmap)
+
+    val paint = Paint().apply {
+        isAntiAlias = true
+    }
+    canvas.drawPath(path.asAndroidPath(), paint)
+    paint.apply {
+        xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+    }
+    canvas.drawBitmap(bitmap.asAndroidBitmap(), 0f, 0f, paint)
+
+    return resultBitmap.asImageBitmap()
+}
+
+private fun computeOutwardDirection(center: Offset, shardCenter: Offset): Pair<Float, Float> {
+    val dx = shardCenter.x - center.x
+    val dy = shardCenter.y - center.y
+    val distance = sqrt(dx * dx + dy * dy)
+
+    return if (distance > 0f) {
+        Pair(dx / distance, dy / distance) // Normalize vector
+    } else {
+        Pair(0f, 0f) // Prevent division by zero
     }
 }
 

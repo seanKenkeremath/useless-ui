@@ -1,6 +1,5 @@
 package com.seankenkeremath.uselessui.exampleapp
 
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -30,7 +29,6 @@ import androidx.core.graphics.drawable.toBitmap
 import com.seankenkeremath.uselessui.R
 import com.seankenkeremath.uselessui.UselessButton
 import com.seankenkeremath.uselessui.exampleapp.theme.UselessUITheme
-import com.seankenkeremath.uselessui.shatter.GlassShatterEffect
 import com.seankenkeremath.uselessui.shatter.ShatterableLayout
 
 class MainActivity : ComponentActivity() {
