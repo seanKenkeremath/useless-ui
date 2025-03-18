@@ -21,17 +21,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
-import com.seankenkeremath.uselessui.R
 import com.seankenkeremath.uselessui.UselessButton
 import com.seankenkeremath.uselessui.exampleapp.theme.UselessUITheme
 import com.seankenkeremath.uselessui.shatter.CaptureMode
@@ -54,8 +51,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun DemoScreen(modifier: Modifier = Modifier) {
-    val clickCount = remember { mutableStateOf(0) }
-    val isShattered = remember { mutableStateOf(false) }
+    var clickCount by remember { mutableIntStateOf(0) }
+    var isShattered by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -64,11 +61,11 @@ fun DemoScreen(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "Library Demo")
-        Text(text = "Button clicked ${clickCount.value} times")
+        Text(text = "Button clicked $clickCount times")
 
         UselessButton(
             text = "Click Me!",
-            onClick = { clickCount.value++ }
+            onClick = { clickCount++ }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -78,8 +75,8 @@ fun DemoScreen(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(8.dp))
         
         UselessButton(
-            text = if (isShattered.value) "Reverse Shatter" else "Shatter",
-            onClick = { isShattered.value = !isShattered.value }
+            text = if (isShattered) "Reverse Shatter" else "Shatter",
+            onClick = { isShattered = !isShattered }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -99,7 +96,7 @@ fun DemoScreen(modifier: Modifier = Modifier) {
 
         ShatterableLayout(
             captureMode = CaptureMode.LAZY,
-            isShattered = isShattered.value,
+            isShattered = isShattered,
         ) {
             Box(
                 modifier = Modifier

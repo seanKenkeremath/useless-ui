@@ -36,7 +36,7 @@ fun ShatterableLayout(
     var size by remember { mutableStateOf(IntSize.Zero) }
     var contentBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var shattered by remember { mutableStateOf(isShattered) }
-    var hasBeenShattered by remember { mutableStateOf(false) }
+    var hasBeenShattered by remember { mutableStateOf(isShattered) }
     var needsRecapture by remember { mutableStateOf(false) }
     
     // Invalidate bitmap when content key changes
