@@ -21,6 +21,7 @@ import androidx.core.graphics.createBitmap
  *
  * @param isShattered Whether the content should be shattered. Changing this value will trigger an animation to that state.
  * @param modifier Modifier to be applied to the layout
+ * @param continueWhenReassembled If true, the original content will continue rendering after unshattering
  * @param contentKey A key to invalidate the content bitmap
  * @param captureMode Controls when the content bitmap is captured
  * @param content The content to be displayed and potentially shattered
@@ -29,6 +30,7 @@ import androidx.core.graphics.createBitmap
 fun ShatterableLayout(
     isShattered: Boolean,
     modifier: Modifier = Modifier,
+    continueWhenReassembled: Boolean = false,
     contentKey: Any? = null,
     captureMode: CaptureMode = CaptureMode.AUTO,
     content: @Composable () -> Unit
@@ -38,7 +40,17 @@ fun ShatterableLayout(
     var shattered by remember { mutableStateOf(isShattered) }
     var hasBeenShattered by remember { mutableStateOf(isShattered) }
     var needsRecapture by remember { mutableStateOf(false) }
-    
+    val onAnimationComplete = remember<(Boolean) -> Unit>{
+        { shattered ->
+            if (!shattered) {
+                if (continueWhenReassembled) {
+                    hasBeenShattered = false
+                }
+            }
+        }
+
+    }
+
     // Invalidate bitmap when content key changes
     LaunchedEffect(contentKey) {
         if (captureMode != CaptureMode.LAZY) {
@@ -49,16 +61,17 @@ fun ShatterableLayout(
             }
         }
     }
-    
+
     // Handle size changes
     LaunchedEffect(size) {
-        if (contentBitmap != null && 
-            (contentBitmap!!.width != size.width || 
-             contentBitmap!!.height != size.height)) {
+        if (contentBitmap != null &&
+            (contentBitmap!!.width != size.width ||
+                    contentBitmap!!.height != size.height)
+        ) {
             contentBitmap = null
         }
     }
-    
+
     // Handle shatter state changes
     LaunchedEffect(isShattered) {
         if (shattered != isShattered) {
@@ -112,7 +125,8 @@ fun ShatterableLayout(
             ShatteredImage(
                 bitmap = contentBitmap!!,
                 isShattered = shattered,
-                initiallyShattered = false
+                initiallyShattered = false,
+                onAnimationCompleted = onAnimationComplete
             )
         } else {
             // Otherwise show the normal content
@@ -129,12 +143,12 @@ enum class CaptureMode {
      * Automatically recapture when content key changes or size changes
      */
     AUTO,
-    
+
     /**
      * Only capture the bitmap when transitioning to the shattered state
      */
     LAZY,
-    
+
     /**
      * Capture once and reuse the bitmap until explicitly invalidated via contentKey
      */

@@ -97,6 +97,7 @@ fun DemoScreen(modifier: Modifier = Modifier) {
         ShatterableLayout(
             captureMode = CaptureMode.LAZY,
             isShattered = isShattered,
+            continueWhenReassembled = true
         ) {
             Box(
                 modifier = Modifier
