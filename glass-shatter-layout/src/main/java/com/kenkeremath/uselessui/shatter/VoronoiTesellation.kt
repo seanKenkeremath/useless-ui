@@ -1,4 +1,4 @@
-package com.seankenkeremath.uselessui.shatter
+package com.kenkeremath.uselessui.shatter
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path

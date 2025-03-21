@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.seankenkeremath.uselessui"
+    namespace = "com.kenkeremath.uselessui.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.seankenkeremath.uselessui"
+        applicationId = "com.kenkeremath.uselessui.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -41,7 +41,7 @@ android {
 
 dependencies {
 
-    implementation(project(":useless-ui-lib"))
+    implementation(project(":glass-shatter-layout"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

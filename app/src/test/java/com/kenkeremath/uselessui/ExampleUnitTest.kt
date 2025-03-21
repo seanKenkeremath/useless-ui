@@ -1,4 +1,4 @@
-package com.seankenkeremath.uselessui
+package com.kenkeremath.uselessui
 
 import org.junit.Test
 

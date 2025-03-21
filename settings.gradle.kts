@@ -22,5 +22,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Useless UI"
 include(":app")
-include(":useless-ui-lib")
+include(":glass-shatter-layout")
  

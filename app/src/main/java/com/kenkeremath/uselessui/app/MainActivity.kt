@@ -1,4 +1,4 @@
-package com.seankenkeremath.uselessui.exampleapp
+package com.kenkeremath.uselessui.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,11 +9,11 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
@@ -21,18 +21,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.seankenkeremath.uselessui.UselessButton
-import com.seankenkeremath.uselessui.exampleapp.theme.UselessUITheme
-import com.seankenkeremath.uselessui.shatter.CaptureMode
-import com.seankenkeremath.uselessui.shatter.ShatterableLayout
+import com.kenkeremath.uselessui.app.theme.UselessUITheme
+import com.kenkeremath.uselessui.shatter.CaptureMode
+import com.kenkeremath.uselessui.shatter.ShatterableLayout
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
@@ -42,7 +41,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             UselessUITheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    DemoScreen(modifier = Modifier.padding(innerPadding))
+                    ShatterDemoScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -50,8 +49,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun DemoScreen(modifier: Modifier = Modifier) {
-    var clickCount by remember { mutableIntStateOf(0) }
+fun ShatterDemoScreen(modifier: Modifier = Modifier) {
     var isShattered by remember { mutableStateOf(false) }
 
     Column(
@@ -60,26 +58,12 @@ fun DemoScreen(modifier: Modifier = Modifier) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Library Demo")
-        Text(text = "Button clicked $clickCount times")
-
-        UselessButton(
-            text = "Click Me!",
-            onClick = { clickCount++ }
+        Text(
+            text = "Tap the image to shatter, tap again to reverse",
+            style = MaterialTheme.typography.headlineLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(16.dp)
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(text = "Tap the image to shatter, tap again to reverse")
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        UselessButton(
-            text = if (isShattered) "Reverse Shatter" else "Shatter",
-            onClick = { isShattered = !isShattered }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         val repeatedValue by rememberInfiniteTransition().animateFloat(
             initialValue = 0f,
@@ -93,11 +77,18 @@ fun DemoScreen(modifier: Modifier = Modifier) {
 
         val text = "Shatter Me!"
         val displayedText = text.substring(0, (text.length * repeatedValue).roundToInt())
+        val interactionSource = remember { MutableInteractionSource() }
 
         ShatterableLayout(
             captureMode = CaptureMode.LAZY,
             isShattered = isShattered,
-            continueWhenReassembled = true
+            continueWhenReassembled = true,
+            modifier = Modifier.clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
+                isShattered = !isShattered
+            }
         ) {
             Box(
                 modifier = Modifier
@@ -119,6 +110,6 @@ fun DemoScreen(modifier: Modifier = Modifier) {
 @Composable
 fun DemoScreenPreview() {
     UselessUITheme {
-        DemoScreen()
+        ShatterDemoScreen()
     }
 }

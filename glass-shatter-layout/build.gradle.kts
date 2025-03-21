@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.seankenkeremath.uselessui"
+    namespace = "com.kenkeremath.uselessui"
     compileSdk = 35
 
     defaultConfig {

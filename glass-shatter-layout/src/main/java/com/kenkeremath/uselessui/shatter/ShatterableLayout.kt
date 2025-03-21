@@ -1,4 +1,4 @@
-package com.seankenkeremath.uselessui.shatter
+package com.kenkeremath.uselessui.shatter
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween

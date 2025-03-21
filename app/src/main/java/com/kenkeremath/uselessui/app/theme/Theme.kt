@@ -1,4 +1,4 @@
-package com.seankenkeremath.uselessui.exampleapp.theme
+package com.kenkeremath.uselessui.app.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

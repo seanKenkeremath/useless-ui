@@ -1,4 +1,4 @@
-package com.seankenkeremath.uselessui.exampleapp.theme
+package com.kenkeremath.uselessui.app.theme
 
 import androidx.compose.ui.graphics.Color
 
