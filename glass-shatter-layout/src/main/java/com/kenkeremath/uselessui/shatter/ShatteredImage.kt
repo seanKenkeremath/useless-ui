@@ -32,13 +32,24 @@ private fun ShatteredPiece(
     shard: ShatteredFragment,
     impactPoint: Offset,
     progress: Float,
+    shatterSpec: ShatterSpec,
 ) {
     val direction = remember { computeOutwardDirection(impactPoint, shard.center) }
-    val velocity = remember { Random.nextFloat() * 200f + 100f }
-
-    val rotationXTarget = remember { (Random.nextFloat() * 60f - 30f) * 4 }
-    val rotationYTarget = remember { (Random.nextFloat() * 60f - 30f) * 4 }
-    val rotationZTarget = remember { (Random.nextFloat() * 60f - 30f) * 4 }
+    val velocity = remember(shatterSpec) {
+        shatterSpec.velocity + Random.nextFloat() * shatterSpec.velocityVariation - shatterSpec.velocityVariation / 2
+    }
+    val rotationXTarget = remember(shatterSpec) {
+        shatterSpec.rotationXTarget + Random.nextFloat() * shatterSpec.rotationXVariation - shatterSpec.rotationXVariation / 2
+    }
+    val rotationYTarget = remember(shatterSpec) {
+        shatterSpec.rotationYTarget + Random.nextFloat() * shatterSpec.rotationYVariation - shatterSpec.rotationYVariation / 2
+    }
+    val rotationZTarget = remember(shatterSpec) {
+        shatterSpec.rotationZTarget + Random.nextFloat() * shatterSpec.rotationZVariation - shatterSpec.rotationZVariation / 2
+    }
+    val alphaTarget = remember(shatterSpec) {
+        shatterSpec.alphaTarget
+    }
 
     Image(
         bitmap = shard.bitmap,
@@ -52,7 +63,7 @@ private fun ShatteredPiece(
                 rotationX = progress * rotationXTarget
                 rotationY = progress * rotationYTarget
                 rotationZ = progress * rotationZTarget
-                alpha = 1f - progress * 0.8f
+                alpha = 1f - progress * (1f - alphaTarget)
                 cameraDistance = 16f * density
             }
     )
@@ -65,6 +76,7 @@ internal fun ShatteredImage(
     hasBeenShattered: Boolean,
     modifier: Modifier = Modifier,
     shatterCenter: Offset = Offset.Unspecified,
+    shatterSpec: ShatterSpec = ShatterSpec(),
 ) {
     val impactPoint = remember(shatterCenter, bitmap) {
         if (shatterCenter == Offset.Unspecified) Offset(
@@ -81,7 +93,7 @@ internal fun ShatteredImage(
                 path = path.path,
                 bitmap = cropBitmap(bitmap, path.path, width.toInt(), height.toInt()),
                 vertices = path.vertices,
-                boundingRect = RectF(0f, 0f, width, height)
+                boundingRect = RectF(0f, 0f, width, height),
             )
         }
     }
@@ -96,7 +108,8 @@ internal fun ShatteredImage(
                 ShatteredPiece(
                     shard = shard,
                     impactPoint = impactPoint,
-                    progress = progress
+                    progress = progress,
+                    shatterSpec = shatterSpec,
                 )
             }
         }
@@ -143,7 +156,12 @@ private fun ShatteredImageComposablePreview() {
 
     Surface {
         Box {
-            ShatteredImage(bitmap = bitmap, hasBeenShattered = true, progress = .5f)
+            ShatteredImage(
+                bitmap = bitmap,
+                hasBeenShattered = true,
+                progress = .5f,
+                shatterSpec = ShatterSpec()
+            )
         }
     }
 }

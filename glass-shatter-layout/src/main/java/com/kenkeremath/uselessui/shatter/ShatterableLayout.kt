@@ -37,6 +37,7 @@ fun ShatterableLayout(
     contentKey: Any? = null,
     captureMode: CaptureMode = CaptureMode.AUTO,
     shatterCenter: Offset = Offset.Unspecified,
+    shatterSpec: ShatterSpec = ShatterSpec(),
     content: @Composable () -> Unit
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -134,6 +135,7 @@ fun ShatterableLayout(
                 shatterCenter = shatterCenter,
                 progress = progress,
                 hasBeenShattered = hasBeenShattered,
+                shatterSpec = shatterSpec,
             )
         } else {
             // Otherwise show the normal content
@@ -160,4 +162,16 @@ enum class CaptureMode {
      * Capture once and reuse the bitmap until explicitly invalidated via contentKey
      */
     ONCE
-} 
+}
+
+data class ShatterSpec(
+    val velocity: Float = 300f,
+    val rotationXTarget: Float = 30f,
+    val rotationYTarget: Float = 30f,
+    val rotationZTarget: Float = 30f,
+    val velocityVariation: Float = 100f,
+    val rotationXVariation: Float = 10f,
+    val rotationYVariation: Float = 10f,
+    val rotationZVariation: Float = 10f,
+    val alphaTarget: Float = 0f,
+)
