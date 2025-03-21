@@ -26,6 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -78,12 +80,26 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
         val text = "Shatter Me!"
         val displayedText = text.substring(0, (text.length * repeatedValue).roundToInt())
         val interactionSource = remember { MutableInteractionSource() }
+        var impactOffset by remember { mutableStateOf(Offset.Unspecified) }
 
         ShatterableLayout(
             captureMode = CaptureMode.LAZY,
             isShattered = isShattered,
             continueWhenReassembled = true,
-            modifier = Modifier.clickable(
+            shatterCenter = impactOffset,
+            modifier = Modifier
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            val change = event.changes.firstOrNull()
+                            if (change != null && change.pressed) {
+                                impactOffset = change.position
+                            }
+                        }
+                    }
+                }
+                .clickable(
                 interactionSource = interactionSource,
                 indication = null
             ) {

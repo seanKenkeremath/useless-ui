@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -35,6 +36,7 @@ fun ShatterableLayout(
     continueWhenReassembled: Boolean = false,
     contentKey: Any? = null,
     captureMode: CaptureMode = CaptureMode.AUTO,
+    shatterCenter: Offset = Offset.Unspecified,
     content: @Composable () -> Unit
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -129,6 +131,7 @@ fun ShatterableLayout(
             // If we have the bitmap and have shattered, show the shattered version
             ShatteredImage(
                 bitmap = contentBitmap!!,
+                shatterCenter = shatterCenter,
                 progress = progress,
                 hasBeenShattered = hasBeenShattered,
             )
