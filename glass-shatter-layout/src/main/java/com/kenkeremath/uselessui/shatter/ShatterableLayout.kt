@@ -48,7 +48,7 @@ fun ShatterableLayout(
 
     val progress by animateFloatAsState(
         targetValue = if (shattered) 1f else 0f,
-        animationSpec = tween(durationMillis = 2000),
+        animationSpec = tween(durationMillis = shatterSpec.durationMillis.toInt()),
         label = "shatter",
         finishedListener = { float ->
             if (float == 0f) {
@@ -165,6 +165,7 @@ enum class CaptureMode {
 }
 
 data class ShatterSpec(
+    val durationMillis: Long = 500L,
     val velocity: Float = 300f,
     val rotationXTarget: Float = 30f,
     val rotationYTarget: Float = 30f,

@@ -35,19 +35,19 @@ private fun ShatteredPiece(
     shatterSpec: ShatterSpec,
 ) {
     val direction = remember { computeOutwardDirection(impactPoint, shard.center) }
-    val velocity = remember(shatterSpec) {
+    val velocity = remember(shatterSpec.velocity) {
         shatterSpec.velocity + Random.nextFloat() * shatterSpec.velocityVariation - shatterSpec.velocityVariation / 2
     }
-    val rotationXTarget = remember(shatterSpec) {
+    val rotationXTarget = remember(shatterSpec.rotationXTarget, shatterSpec.rotationXVariation) {
         shatterSpec.rotationXTarget + Random.nextFloat() * shatterSpec.rotationXVariation - shatterSpec.rotationXVariation / 2
     }
-    val rotationYTarget = remember(shatterSpec) {
+    val rotationYTarget = remember(shatterSpec.rotationYTarget, shatterSpec.rotationYVariation) {
         shatterSpec.rotationYTarget + Random.nextFloat() * shatterSpec.rotationYVariation - shatterSpec.rotationYVariation / 2
     }
-    val rotationZTarget = remember(shatterSpec) {
+    val rotationZTarget = remember(shatterSpec.rotationZTarget, shatterSpec.rotationZVariation) {
         shatterSpec.rotationZTarget + Random.nextFloat() * shatterSpec.rotationZVariation - shatterSpec.rotationZVariation / 2
     }
-    val alphaTarget = remember(shatterSpec) {
+    val alphaTarget = remember(shatterSpec.alphaTarget) {
         shatterSpec.alphaTarget
     }
 
