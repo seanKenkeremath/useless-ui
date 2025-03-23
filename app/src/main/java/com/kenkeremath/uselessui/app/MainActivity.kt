@@ -146,7 +146,7 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
                         while (true) {
                             val event = awaitPointerEvent()
                             val change = event.changes.firstOrNull()
-                            if (change != null && change.pressed) {
+                            if (change != null && change.pressed && !isShattered) {
                                 impactOffset = change.position
                             }
                         }
@@ -175,7 +175,6 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Add toggle for center points visualization
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -237,7 +236,6 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
             valueRange = 0f..1f
         )
 
-        // Add reset button
         OutlinedButton(
             onClick = { resetParameters() },
             modifier = Modifier.padding(top = 8.dp)
@@ -245,7 +243,6 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
             Text("Reset Parameters")
         }
 
-        // Add some space at the bottom for better scrolling experience
         Spacer(modifier = Modifier.height(32.dp))
     }
 }

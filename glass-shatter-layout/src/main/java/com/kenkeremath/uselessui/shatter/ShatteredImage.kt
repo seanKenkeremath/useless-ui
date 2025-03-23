@@ -43,22 +43,24 @@ private fun ShatteredPiece(
 ) {
     if (shard.vertices.isEmpty()) return
 
-    val direction = remember { computeOutwardDirection(impactPoint, shard.center) }
-    val velocity = remember(shatterSpec.velocity) {
-        shatterSpec.velocity + Random.nextFloat() * shatterSpec.velocityVariation - shatterSpec.velocityVariation / 2
+    val randomVariations = remember(shard) {
+        ShardRandomVariations(
+            velocityVariation = Random.nextFloat() * shatterSpec.velocityVariation - shatterSpec.velocityVariation / 2,
+            rotationXVariation = Random.nextFloat() * shatterSpec.rotationXVariation - shatterSpec.rotationXVariation / 2,
+            rotationYVariation = Random.nextFloat() * shatterSpec.rotationYVariation - shatterSpec.rotationYVariation / 2,
+            rotationZVariation = Random.nextFloat() * shatterSpec.rotationZVariation - shatterSpec.rotationZVariation / 2
+        )
     }
-    val rotationXTarget = remember(shatterSpec.rotationXTarget, shatterSpec.rotationXVariation) {
-        shatterSpec.rotationXTarget + Random.nextFloat() * shatterSpec.rotationXVariation - shatterSpec.rotationXVariation / 2
+    
+    val direction = remember(impactPoint, shard.center) { 
+        computeOutwardDirection(impactPoint, shard.center) 
     }
-    val rotationYTarget = remember(shatterSpec.rotationYTarget, shatterSpec.rotationYVariation) {
-        shatterSpec.rotationYTarget + Random.nextFloat() * shatterSpec.rotationYVariation - shatterSpec.rotationYVariation / 2
-    }
-    val rotationZTarget = remember(shatterSpec.rotationZTarget, shatterSpec.rotationZVariation) {
-        shatterSpec.rotationZTarget + Random.nextFloat() * shatterSpec.rotationZVariation - shatterSpec.rotationZVariation / 2
-    }
-    val alphaTarget = remember(shatterSpec.alphaTarget) {
-        shatterSpec.alphaTarget
-    }
+    
+    val velocity = shatterSpec.velocity + randomVariations.velocityVariation
+    val rotationXTarget = shatterSpec.rotationXTarget + randomVariations.rotationXVariation
+    val rotationYTarget = shatterSpec.rotationYTarget + randomVariations.rotationYVariation
+    val rotationZTarget = shatterSpec.rotationZTarget + randomVariations.rotationZVariation
+    val alphaTarget = shatterSpec.alphaTarget
 
     // Crop the bitmap on demand and remember it
     val croppedBitmap = remember(originalBitmap, shard.path, shard.shardBoundingRect) {
@@ -126,9 +128,8 @@ internal fun ShatteredImage(
     shatterSpec: ShatterSpec = ShatterSpec(),
     showCenterPoints: Boolean = false,
 ) {
-    // TODO: remove bypass logic
     val impactPoint = remember(shatterCenter, bitmap) {
-        if (shatterCenter == Offset.Unspecified || true) Offset(
+        if (shatterCenter == Offset.Unspecified) Offset(
             bitmap.width / 2f,
             bitmap.height / 2f
         ) else shatterCenter
@@ -337,4 +338,12 @@ private fun createColoredBitmap(width: Int, height: Int, color: Int): Bitmap {
 
     return bitmap
 }
+
+// Add this data class to store random variations
+private data class ShardRandomVariations(
+    val velocityVariation: Float,
+    val rotationXVariation: Float,
+    val rotationYVariation: Float,
+    val rotationZVariation: Float
+)
 

@@ -62,7 +62,6 @@ fun ShatterableLayout(
         }
     )
 
-    // Invalidate bitmap when content key changes
     LaunchedEffect(contentKey) {
         if (captureMode != CaptureMode.LAZY) {
             if (!shattered) {
@@ -73,7 +72,6 @@ fun ShatterableLayout(
         }
     }
 
-    // Handle size changes
     LaunchedEffect(size) {
         if (contentBitmap != null &&
             (contentBitmap!!.width != size.width ||
@@ -83,7 +81,6 @@ fun ShatterableLayout(
         }
     }
 
-    // Handle shatter state changes
     LaunchedEffect(isShattered) {
         if (shattered != isShattered) {
             shattered = isShattered
