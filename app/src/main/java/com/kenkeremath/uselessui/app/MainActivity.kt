@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -66,6 +67,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ShatterDemoScreen(modifier: Modifier = Modifier) {
     var isShattered by remember { mutableStateOf(false) }
+    var showCenterPoints by remember { mutableStateOf(false) }
 
     val defaultDuration = 1000L
     val defaultVelocity = 300f
@@ -137,6 +139,7 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
             continueWhenReassembled = true,
             shatterCenter = impactOffset,
             shatterSpec = shatterSpec,
+            showCenterPoints = showCenterPoints,
             modifier = Modifier
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
@@ -171,6 +174,26 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Add toggle for center points visualization
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Show Center Points",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Switch(
+                checked = showCenterPoints,
+                onCheckedChange = { showCenterPoints = it }
+            )
+        }
+
+        Spacer(modifier = Modifier.padding(vertical = 8.dp))
 
         ParameterSlider(
             label = "Duration",

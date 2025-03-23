@@ -40,6 +40,7 @@ fun ShatterableLayout(
     captureMode: CaptureMode = CaptureMode.AUTO,
     shatterCenter: Offset = Offset.Unspecified,
     shatterSpec: ShatterSpec = ShatterSpec(),
+    showCenterPoints: Boolean = false,
     content: @Composable () -> Unit
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -138,7 +139,7 @@ fun ShatterableLayout(
                 progress = progress,
                 hasBeenShattered = hasBeenShattered,
                 shatterSpec = shatterSpec,
-                showCenterPoints = true,
+                showCenterPoints = showCenterPoints,
                 modifier = Modifier.size(
                     size.width.pxToDp(), size.height.pxToDp()
                 )

@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toComposeRect
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
@@ -41,7 +42,7 @@ private fun ShatteredPiece(
     showCenterPoint: Boolean = false,
 ) {
     if (shard.vertices.isEmpty()) return
-    
+
     val direction = remember { computeOutwardDirection(impactPoint, shard.center) }
     val velocity = remember(shatterSpec.velocity) {
         shatterSpec.velocity + Random.nextFloat() * shatterSpec.velocityVariation - shatterSpec.velocityVariation / 2
@@ -58,7 +59,7 @@ private fun ShatteredPiece(
     val alphaTarget = remember(shatterSpec.alphaTarget) {
         shatterSpec.alphaTarget
     }
-    
+
     // Crop the bitmap on demand and remember it
     val croppedBitmap = remember(originalBitmap, shard.path, shard.shardBoundingRect) {
         cropBitmapToFragmentBounds(originalBitmap, shard.path, shard.shardBoundingRect)
@@ -77,6 +78,10 @@ private fun ShatteredPiece(
                 alpha = 1f - progress * (1f - alphaTarget)
                 cameraDistance = 16f * density
             }
+            .size(
+                with(LocalDensity.current) { shard.parentBoundingRect.width().toDp() },
+                with(LocalDensity.current) { shard.parentBoundingRect.height().toDp() }
+            )
     ) {
         Image(
             bitmap = croppedBitmap,
@@ -88,7 +93,7 @@ private fun ShatteredPiece(
                     translationY = shard.shardBoundingRect.top
                 }
         )
-        
+
         if (showCenterPoint) {
             androidx.compose.foundation.Canvas(
                 modifier = Modifier.fillMaxSize()
@@ -144,8 +149,8 @@ internal fun ShatteredImage(
         }.filter { fragment ->
             // Filter out fragments with empty paths or zero area
             fragment.shardBoundingRect.width() > 0 &&
-            fragment.shardBoundingRect.height() > 0 &&
-            fragment.vertices.isNotEmpty()
+                    fragment.shardBoundingRect.height() > 0 &&
+                    fragment.vertices.isNotEmpty()
         }
     }
 
@@ -205,17 +210,17 @@ private fun ShatteredPiecePreview() {
             Color.argb(255, 0, 150, 255)
         ).asImageBitmap()
     }
-    
+
     val path = Path().apply {
         moveTo(50f, 50f)
         lineTo(250f, 100f)
         lineTo(150f, 250f)
         close()
     }
-    
+
     val bounds = RectF()
     path.asAndroidPath().computeBounds(bounds, true)
-    
+
     val fragment = ShardData(
         path = path,
         vertices = listOf(
@@ -226,7 +231,7 @@ private fun ShatteredPiecePreview() {
         parentBoundingRect = RectF(0f, 0f, 300f, 300f),
         shardBoundingRect = bounds
     )
-    
+
     Surface {
         Box(modifier = Modifier.size(300.dp)) {
             ShatteredPiece(
@@ -266,8 +271,8 @@ private fun ShatteredImageComposablePreview() {
 }
 
 private fun cropBitmapToFragmentBounds(
-    bitmap: ImageBitmap, 
-    path: Path, 
+    bitmap: ImageBitmap,
+    path: Path,
     bounds: RectF
 ): ImageBitmap {
     // Create a bitmap that's only as large as the fragment's bounding box
@@ -275,21 +280,21 @@ private fun cropBitmapToFragmentBounds(
     val top = bounds.top.toInt().coerceAtLeast(0)
     val width = bounds.width().toInt().coerceAtMost(bitmap.width - left)
     val height = bounds.height().toInt().coerceAtMost(bitmap.height - top)
-    
+
     // Safety check - if dimensions are invalid, return a 1x1 transparent bitmap
     if (width <= 0 || height <= 0) {
         val fallbackBitmap = createBitmap(1, 1)
         fallbackBitmap.eraseColor(Color.TRANSPARENT)
         return fallbackBitmap.asImageBitmap()
     }
-    
+
     // Create a bitmap of the exact size needed
     val resultBitmap = createBitmap(width, height)
     val canvas = android.graphics.Canvas(resultBitmap)
-    
+
     // Translate the canvas so the path is positioned correctly
     canvas.translate(-left.toFloat(), -top.toFloat())
-    
+
     val paint = Paint().apply {
         isAntiAlias = true
     }
@@ -297,10 +302,10 @@ private fun cropBitmapToFragmentBounds(
     paint.apply {
         xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
     }
-    
+
     // Draw only the portion of the original bitmap that we need
     canvas.drawBitmap(bitmap.asAndroidBitmap(), 0f, 0f, paint)
-    
+
     return resultBitmap.asImageBitmap()
 }
 
