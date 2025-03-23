@@ -9,6 +9,8 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -21,7 +23,9 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toComposeRect
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -29,11 +33,15 @@ import kotlin.random.Random
 
 @Composable
 private fun ShatteredPiece(
-    shard: ShatteredFragment,
+    shard: ShardData,
+    originalBitmap: ImageBitmap,
     impactPoint: Offset,
     progress: Float,
     shatterSpec: ShatterSpec,
+    showCenterPoint: Boolean = false,
 ) {
+    if (shard.vertices.isEmpty()) return
+    
     val direction = remember { computeOutwardDirection(impactPoint, shard.center) }
     val velocity = remember(shatterSpec.velocity) {
         shatterSpec.velocity + Random.nextFloat() * shatterSpec.velocityVariation - shatterSpec.velocityVariation / 2
@@ -50,10 +58,13 @@ private fun ShatteredPiece(
     val alphaTarget = remember(shatterSpec.alphaTarget) {
         shatterSpec.alphaTarget
     }
+    
+    // Crop the bitmap on demand and remember it
+    val croppedBitmap = remember(originalBitmap, shard.path, shard.shardBoundingRect) {
+        cropBitmapToFragmentBounds(originalBitmap, shard.path, shard.shardBoundingRect)
+    }
 
-    Image(
-        bitmap = shard.bitmap,
-        contentDescription = null,
+    Box(
         modifier = Modifier
             .graphicsLayer {
                 translationX = progress * direction.first * velocity
@@ -66,7 +77,38 @@ private fun ShatteredPiece(
                 alpha = 1f - progress * (1f - alphaTarget)
                 cameraDistance = 16f * density
             }
-    )
+    ) {
+        Image(
+            bitmap = croppedBitmap,
+            contentDescription = null,
+            modifier = Modifier
+                .graphicsLayer {
+                    // Position the cropped bitmap at the correct location
+                    translationX = shard.shardBoundingRect.left
+                    translationY = shard.shardBoundingRect.top
+                }
+        )
+        
+        if (showCenterPoint) {
+            androidx.compose.foundation.Canvas(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                drawCircle(
+                    color = androidx.compose.ui.graphics.Color.Red,
+                    radius = 8.dp.toPx(),
+                    center = shard.center
+                )
+
+                // Impact vector
+                drawLine(
+                    color = androidx.compose.ui.graphics.Color.Yellow,
+                    start = shard.center,
+                    end = impactPoint,
+                    strokeWidth = 2.dp.toPx()
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -77,9 +119,11 @@ internal fun ShatteredImage(
     modifier: Modifier = Modifier,
     shatterCenter: Offset = Offset.Unspecified,
     shatterSpec: ShatterSpec = ShatterSpec(),
+    showCenterPoints: Boolean = false,
 ) {
+    // TODO: remove bypass logic
     val impactPoint = remember(shatterCenter, bitmap) {
-        if (shatterCenter == Offset.Unspecified) Offset(
+        if (shatterCenter == Offset.Unspecified || true) Offset(
             bitmap.width / 2f,
             bitmap.height / 2f
         ) else shatterCenter
@@ -88,13 +132,20 @@ internal fun ShatteredImage(
     val width = bitmap.width.toFloat()
     val height = bitmap.height.toFloat()
     val shards = remember(bitmap) {
-        generateVoronoiShards(10, bitmap.width.toFloat(), bitmap.height.toFloat()).map { path ->
-            ShatteredFragment(
+        generateVoronoiShards(10, width, height).map { path ->
+            val fragmentBounds = RectF()
+            path.path.asAndroidPath().computeBounds(fragmentBounds, true)
+            ShardData(
                 path = path.path,
-                bitmap = cropBitmap(bitmap, path.path, width.toInt(), height.toInt()),
                 vertices = path.vertices,
-                boundingRect = RectF(0f, 0f, width, height),
+                parentBoundingRect = RectF(0f, 0f, width, height),
+                shardBoundingRect = fragmentBounds
             )
+        }.filter { fragment ->
+            // Filter out fragments with empty paths or zero area
+            fragment.shardBoundingRect.width() > 0 &&
+            fragment.shardBoundingRect.height() > 0 &&
+            fragment.vertices.isNotEmpty()
         }
     }
 
@@ -107,9 +158,11 @@ internal fun ShatteredImage(
             shards.forEach { shard ->
                 ShatteredPiece(
                     shard = shard,
+                    originalBitmap = bitmap,
                     impactPoint = impactPoint,
                     progress = progress,
                     shatterSpec = shatterSpec,
+                    showCenterPoint = showCenterPoints
                 )
             }
         }
@@ -117,11 +170,11 @@ internal fun ShatteredImage(
 }
 
 
-private data class ShatteredFragment(
+private data class ShardData(
     val path: Path,
-    val bitmap: ImageBitmap,
     val vertices: List<Offset>,
-    val boundingRect: RectF // Bounding box of the entire original glass area
+    val parentBoundingRect: RectF, // Bounding box of the original bitmap
+    val shardBoundingRect: RectF // Bounding box of just this shard
 ) {
 
     val center: Offset
@@ -135,13 +188,58 @@ private data class ShatteredFragment(
     // For instance, a normal rectangle would be (.5, .5), but within our bounding box the "center"
     // of a shard is a different location in the bounding box.
     val boundingCenterFractionX: Float
-        get() = (center.x - boundingRect.left) / boundingRect.width()
+        get() = (center.x - parentBoundingRect.left) / parentBoundingRect.width()
 
     val boundingCenterFractionY: Float
-        get() = (center.y - boundingRect.top) / boundingRect.height()
+        get() = (center.y - parentBoundingRect.top) / parentBoundingRect.height()
 
 }
 
+@Preview
+@Composable
+private fun ShatteredPiecePreview() {
+    val bitmap = remember {
+        createColoredBitmap(
+            300,
+            300,
+            Color.argb(255, 0, 150, 255)
+        ).asImageBitmap()
+    }
+    
+    val path = Path().apply {
+        moveTo(50f, 50f)
+        lineTo(250f, 100f)
+        lineTo(150f, 250f)
+        close()
+    }
+    
+    val bounds = RectF()
+    path.asAndroidPath().computeBounds(bounds, true)
+    
+    val fragment = ShardData(
+        path = path,
+        vertices = listOf(
+            Offset(50f, 50f),
+            Offset(250f, 100f),
+            Offset(150f, 250f)
+        ),
+        parentBoundingRect = RectF(0f, 0f, 300f, 300f),
+        shardBoundingRect = bounds
+    )
+    
+    Surface {
+        Box(modifier = Modifier.size(300.dp)) {
+            ShatteredPiece(
+                shard = fragment,
+                originalBitmap = bitmap,
+                impactPoint = Offset(150f, 150f),
+                progress = 0f,
+                shatterSpec = ShatterSpec(),
+                showCenterPoint = true
+            )
+        }
+    }
+}
 
 @Preview
 @Composable
@@ -160,16 +258,38 @@ private fun ShatteredImageComposablePreview() {
                 bitmap = bitmap,
                 hasBeenShattered = true,
                 progress = .5f,
-                shatterSpec = ShatterSpec()
+                shatterSpec = ShatterSpec(),
+                showCenterPoints = true
             )
         }
     }
 }
 
-private fun cropBitmap(bitmap: ImageBitmap, path: Path, width: Int, height: Int): ImageBitmap {
+private fun cropBitmapToFragmentBounds(
+    bitmap: ImageBitmap, 
+    path: Path, 
+    bounds: RectF
+): ImageBitmap {
+    // Create a bitmap that's only as large as the fragment's bounding box
+    val left = bounds.left.toInt().coerceAtLeast(0)
+    val top = bounds.top.toInt().coerceAtLeast(0)
+    val width = bounds.width().toInt().coerceAtMost(bitmap.width - left)
+    val height = bounds.height().toInt().coerceAtMost(bitmap.height - top)
+    
+    // Safety check - if dimensions are invalid, return a 1x1 transparent bitmap
+    if (width <= 0 || height <= 0) {
+        val fallbackBitmap = createBitmap(1, 1)
+        fallbackBitmap.eraseColor(Color.TRANSPARENT)
+        return fallbackBitmap.asImageBitmap()
+    }
+    
+    // Create a bitmap of the exact size needed
     val resultBitmap = createBitmap(width, height)
     val canvas = android.graphics.Canvas(resultBitmap)
-
+    
+    // Translate the canvas so the path is positioned correctly
+    canvas.translate(-left.toFloat(), -top.toFloat())
+    
     val paint = Paint().apply {
         isAntiAlias = true
     }
@@ -177,8 +297,10 @@ private fun cropBitmap(bitmap: ImageBitmap, path: Path, width: Int, height: Int)
     paint.apply {
         xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
     }
+    
+    // Draw only the portion of the original bitmap that we need
     canvas.drawBitmap(bitmap.asAndroidBitmap(), 0f, 0f, paint)
-
+    
     return resultBitmap.asImageBitmap()
 }
 

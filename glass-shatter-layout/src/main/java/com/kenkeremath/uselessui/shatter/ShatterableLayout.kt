@@ -3,6 +3,7 @@ package com.kenkeremath.uselessui.shatter
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,6 +16,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.createBitmap
@@ -136,6 +138,10 @@ fun ShatterableLayout(
                 progress = progress,
                 hasBeenShattered = hasBeenShattered,
                 shatterSpec = shatterSpec,
+                showCenterPoints = true,
+                modifier = Modifier.size(
+                    size.width.pxToDp(), size.height.pxToDp()
+                )
             )
         } else {
             // Otherwise show the normal content
@@ -143,6 +149,9 @@ fun ShatterableLayout(
         }
     }
 }
+
+@Composable
+internal fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
 
 /**
  * Controls when the content bitmap is captured in ShatterableLayout
