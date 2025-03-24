@@ -152,6 +152,16 @@ enum class CaptureMode {
     LAZY,
 }
 
+/**
+ * This defines how the shatter should be animated.
+ *
+ * Velocity determines how quickly the pieces move and therefore how far they go
+ *
+ * All target values represent what the values of those properties should be when the shatter has completed
+ *
+ * Variation values are the range within which a property will randomly vary for a property on
+ * a given piece. This is important to make all pieces have some slight differences in movement.
+ */
 data class ShatterSpec(
     val durationMillis: Long = 500L,
     val velocity: Float = 300f,
