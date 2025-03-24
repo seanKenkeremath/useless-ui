@@ -4,7 +4,7 @@ Useless UI is a Jetpack Compose library containing fun, but probably useless UI 
 
 I will be adding to this over time as I get inspiration, tinker with things, and create components I want to reuse in other side projects.
 
-## Examples
+## Components
 
 ### ShatterableLayout
 
@@ -18,16 +18,11 @@ You can also do this in reverse if you want to "unshatter" something which looks
 * Individual shards are rendered using cropped, smaller bitmaps to conserve memory
 * Bitmap capturing can be done lazily or immediately depending on your use case
 * The shattering animation of individual shards are performed at the graphics layer
-* **TODO:** 
-
+* Recompositions are minimized
 
 #### Future improvements + optimizations
 * Create a "ShatterablePager"
 * We can avoid creating cropped bitmaps entirely if Compose supports either **1)** `graphicsLayer` animations on Canvas objects (we can crop the parent bitmap in the Canvas) or **2)** cropping inside `graphicsLayer` with an arbitrary path (only simple shapes are currently supported)
 * Capturing of the bitmap and creation of Voronoi cells can be offloaded to a background thread
 * Pass in the number of shards to create in the Voronoi algorithm as part of `ShatterSpec`
-
-
-
-
-
+* Pass in interpolation properties for shatter animation
