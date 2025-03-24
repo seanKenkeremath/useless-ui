@@ -1,5 +1,6 @@
 package com.kenkeremath.uselessui.shatter
 
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
@@ -49,7 +50,6 @@ fun ShatterableLayout(
     var size by remember { mutableStateOf(IntSize.Zero) }
     var contentBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var needsRecapture by remember { mutableStateOf(false) }
-    var previousShatterState by remember { mutableStateOf(shatterState) }
 
     val targetProgress = when (shatterState) {
         ShatterState.Intact, ShatterState.Reassembled -> 0f
@@ -65,40 +65,20 @@ fun ShatterableLayout(
         }
     )
 
-    // Handle content key changes
+    // Handle content key changes by marking the bitmap as invalid
     LaunchedEffect(contentKey) {
-        if (captureMode != CaptureMode.LAZY) {
-            if (shatterState == ShatterState.Intact) {
-                contentBitmap = null
-            } else {
-                needsRecapture = true
-            }
+        if (contentBitmap != null) {
+            needsRecapture = true
         }
     }
 
-    // Handle size changes
+    // Handle size changes by marking the bitmap as invalid
     LaunchedEffect(size) {
         if (contentBitmap != null &&
             (contentBitmap!!.width != size.width ||
                     contentBitmap!!.height != size.height)
         ) {
-            contentBitmap = null
-        }
-    }
-
-    // Handle state transitions
-    LaunchedEffect(shatterState) {
-        if (shatterState != previousShatterState) {
-            // If transitioning from intact to shattered, we need to capture the content
-            if (previousShatterState == ShatterState.Intact &&
-                shatterState == ShatterState.Shattered) {
-                if (captureMode == CaptureMode.LAZY || needsRecapture) {
-                    contentBitmap = null
-                    needsRecapture = false
-                }
-            }
-            
-            previousShatterState = shatterState
+            needsRecapture = true
         }
     }
 
@@ -110,9 +90,8 @@ fun ShatterableLayout(
                 }
             }
     ) {
-        // If we need to capture the bitmap and haven't yet
-        if (contentBitmap == null && size.width > 0 && size.height > 0) {
-            // Show the content and capture it
+        // Capture the content bitmap if needed
+        if ((captureMode != CaptureMode.LAZY || shatterState != ShatterState.Intact) && (contentBitmap == null || needsRecapture) && size.width > 0 && size.height > 0) {
             AndroidView(
                 factory = { ctx ->
                     ComposeView(ctx).apply {
@@ -128,7 +107,9 @@ fun ShatterableLayout(
                                 val bitmap = createBitmap(width, height)
                                 val canvas = android.graphics.Canvas(bitmap)
                                 draw(canvas)
+                                Log.d("REC", "capturing bitmap")
                                 contentBitmap = bitmap.asImageBitmap()
+                                needsRecapture = false
                             }
                         }
                     }
@@ -166,14 +147,9 @@ enum class CaptureMode {
     AUTO,
 
     /**
-     * Only capture the bitmap when transitioning to the shattered state
+     * Only capture the bitmap when transitioning to the shattered state. Invalidate old bitmap when content key or size chagnes
      */
     LAZY,
-
-    /**
-     * Capture once and reuse the bitmap until explicitly invalidated via contentKey
-     */
-    ONCE
 }
 
 data class ShatterSpec(

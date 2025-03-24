@@ -2,7 +2,6 @@ package com.kenkeremath.uselessui.app
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -89,16 +88,17 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
         alphaTarget = defaultAlphaTarget
     }
 
-    val shatterSpec = remember(durationMillis, velocity, rotationX, rotationY, rotationZ, alphaTarget) {
-        ShatterSpec(
-            durationMillis = durationMillis,
-            velocity = velocity,
-            rotationXTarget = rotationX,
-            rotationYTarget = rotationY,
-            rotationZTarget = rotationZ,
-            alphaTarget = alphaTarget
-        )
-    }
+    val shatterSpec =
+        remember(durationMillis, velocity, rotationX, rotationY, rotationZ, alphaTarget) {
+            ShatterSpec(
+                durationMillis = durationMillis,
+                velocity = velocity,
+                rotationXTarget = rotationX,
+                rotationYTarget = rotationY,
+                rotationZTarget = rotationZ,
+                alphaTarget = alphaTarget
+            )
+        }
 
     Column(
         modifier = modifier
@@ -117,6 +117,7 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
 
         val interactionSource = remember { MutableInteractionSource() }
         var impactOffset by remember { mutableStateOf(Offset.Unspecified) }
+        var animating by remember { mutableStateOf(false) }
 
         ShatterableLayout(
             captureMode = CaptureMode.LAZY,
@@ -124,13 +125,19 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
             shatterCenter = impactOffset,
             shatterSpec = shatterSpec,
             showCenterPoints = showCenterPoints,
+            onAnimationCompleted = {
+                animating = false
+            },
             modifier = Modifier
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
                             val event = awaitPointerEvent()
                             val change = event.changes.firstOrNull()
-                            if (change != null && change.pressed && shatterState == ShatterState.Intact) {
+                            if (change != null
+                                && !animating && change.pressed
+                                && shatterState == ShatterState.Intact
+                            ) {
                                 impactOffset = change.position
                             }
                         }
@@ -140,12 +147,13 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
                     interactionSource = interactionSource,
                     indication = null
                 ) {
-                    val newState = when(shatterState) {
+                    val newState = when (shatterState) {
                         ShatterState.Intact -> ShatterState.Shattered
                         ShatterState.Shattered -> ShatterState.Intact
                         ShatterState.Reassembled -> ShatterState.Shattered
                     }
                     shatterState = newState
+                    animating = true
                 }
         ) {
             Box(

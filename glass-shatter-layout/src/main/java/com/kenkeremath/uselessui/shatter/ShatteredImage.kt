@@ -61,7 +61,6 @@ private fun ShatteredPiece(
     val rotationZTarget = shatterSpec.rotationZTarget + randomVariations.rotationZVariation
     val alphaTarget = shatterSpec.alphaTarget
 
-    // Crop the bitmap on demand and remember it
     val croppedBitmap = remember(originalBitmap, shard.path, shard.shardBoundingRect) {
         cropBitmapToFragmentBounds(originalBitmap, shard.path, shard.shardBoundingRect)
     }
@@ -332,7 +331,6 @@ private fun createColoredBitmap(width: Int, height: Int, color: Int): Bitmap {
     return bitmap
 }
 
-// Add this data class to store random variations
 private data class ShardRandomVariations(
     val velocityVariation: Float,
     val rotationXVariation: Float,
