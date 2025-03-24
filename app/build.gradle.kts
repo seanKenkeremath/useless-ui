@@ -41,7 +41,7 @@ android {
 
 dependencies {
 
-    implementation(project(":glass-shatter-layout"))
+    implementation(project(":shatterable-layout"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
