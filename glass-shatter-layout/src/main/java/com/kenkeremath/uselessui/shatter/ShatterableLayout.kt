@@ -164,3 +164,23 @@ data class ShatterSpec(
     val rotationZVariation: Float = 10f,
     val alphaTarget: Float = 0f,
 )
+
+/**
+ * The state that the shattered layout can be in. The layout will animate
+ * transitions between these states.
+ *
+ * Intact: The layout is not shattered and will render the live content
+ *
+ * Shattered: The layout will render the shattered version of a
+ * captured bitmap of the content.
+ *
+ * Reassembled: The layout will render the individual pieces of
+ * the captured bitmap in their original positions. This state is as if you have tried to reassemble
+ * broken shards of something but it still cracked. In this state the live content will
+ * not be displayed, and cracks will still be visible
+ */
+enum class ShatterState {
+    Intact,
+    Shattered,
+    Reassembled
+}
