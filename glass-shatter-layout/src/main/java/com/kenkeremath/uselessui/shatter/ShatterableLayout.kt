@@ -24,47 +24,51 @@ import androidx.core.graphics.createBitmap
 /**
  * A composable that can shatter its content when triggered.
  *
- * @param isShattered Whether the content should be shattered. Changing this value will trigger an animation to that state.
+ * @param shatterState The current state of the shatter effect (Intact, Shattered, Reassembled)
  * @param modifier Modifier to be applied to the layout
- * @param continueWhenReassembled If true, the original content will continue rendering after unshattering
  * @param contentKey A key to invalidate the content bitmap
  * @param captureMode Controls when the content bitmap is captured
+ * @param shatterCenter The center point of the shatter effect, Offset.Unspecified for center
+ * @param shatterSpec Configuration for the shatter animation
+ * @param showCenterPoints Whether to show debug points for the shatter centers
+ * @param onAnimationCompleted Callback when the animation to the target state completes
  * @param content The content to be displayed and potentially shattered
  */
 @Composable
 fun ShatterableLayout(
-    isShattered: Boolean,
+    shatterState: ShatterState,
     modifier: Modifier = Modifier,
-    continueWhenReassembled: Boolean = false,
     contentKey: Any? = null,
     captureMode: CaptureMode = CaptureMode.AUTO,
     shatterCenter: Offset = Offset.Unspecified,
     shatterSpec: ShatterSpec = ShatterSpec(),
     showCenterPoints: Boolean = false,
+    onAnimationCompleted: (ShatterState) -> Unit = {},
     content: @Composable () -> Unit
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
     var contentBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
-    var shattered by remember { mutableStateOf(isShattered) }
-    var hasBeenShattered by remember { mutableStateOf(isShattered) }
     var needsRecapture by remember { mutableStateOf(false) }
+    var previousShatterState by remember { mutableStateOf(shatterState) }
+
+    val targetProgress = when (shatterState) {
+        ShatterState.Intact, ShatterState.Reassembled -> 0f
+        ShatterState.Shattered -> 1f
+    }
 
     val progress by animateFloatAsState(
-        targetValue = if (shattered) 1f else 0f,
+        targetValue = targetProgress,
         animationSpec = tween(durationMillis = shatterSpec.durationMillis.toInt()),
         label = "shatter",
-        finishedListener = { float ->
-            if (float == 0f) {
-                if (continueWhenReassembled) {
-                    hasBeenShattered = false
-                }
-            }
+        finishedListener = { _ ->
+            onAnimationCompleted(shatterState)
         }
     )
 
+    // Handle content key changes
     LaunchedEffect(contentKey) {
         if (captureMode != CaptureMode.LAZY) {
-            if (!shattered) {
+            if (shatterState == ShatterState.Intact) {
                 contentBitmap = null
             } else {
                 needsRecapture = true
@@ -72,6 +76,7 @@ fun ShatterableLayout(
         }
     }
 
+    // Handle size changes
     LaunchedEffect(size) {
         if (contentBitmap != null &&
             (contentBitmap!!.width != size.width ||
@@ -81,18 +86,19 @@ fun ShatterableLayout(
         }
     }
 
-    LaunchedEffect(isShattered) {
-        if (shattered != isShattered) {
-            shattered = isShattered
-            if (isShattered) {
-                // For LAZY mode, only capture when transitioning to shattered state for the first time
-                // Once it's been shattered we shouldn't recapture
-                if (!hasBeenShattered && (captureMode == CaptureMode.LAZY || needsRecapture)) {
+    // Handle state transitions
+    LaunchedEffect(shatterState) {
+        if (shatterState != previousShatterState) {
+            // If transitioning from intact to shattered, we need to capture the content
+            if (previousShatterState == ShatterState.Intact &&
+                shatterState == ShatterState.Shattered) {
+                if (captureMode == CaptureMode.LAZY || needsRecapture) {
                     contentBitmap = null
                     needsRecapture = false
                 }
-                hasBeenShattered = true
             }
+            
+            previousShatterState = shatterState
         }
     }
 
@@ -128,13 +134,12 @@ fun ShatterableLayout(
                     }
                 }
             )
-        } else if (contentBitmap != null && (shattered || hasBeenShattered)) {
-            // If we have the bitmap and have shattered, show the shattered version
+        } else if (contentBitmap != null && (shatterState != ShatterState.Intact || progress > 0f)) {
+            // Show shattered version if we're not intact OR if we're still animating back to intact
             ShatteredImage(
                 bitmap = contentBitmap!!,
                 shatterCenter = shatterCenter,
                 progress = progress,
-                hasBeenShattered = hasBeenShattered,
                 shatterSpec = shatterSpec,
                 showCenterPoints = showCenterPoints,
                 modifier = Modifier.size(

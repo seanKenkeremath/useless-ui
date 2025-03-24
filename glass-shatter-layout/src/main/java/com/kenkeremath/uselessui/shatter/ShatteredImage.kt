@@ -23,7 +23,6 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toComposeRect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -122,7 +121,6 @@ private fun ShatteredPiece(
 internal fun ShatteredImage(
     bitmap: ImageBitmap,
     progress: Float,
-    hasBeenShattered: Boolean,
     modifier: Modifier = Modifier,
     shatterCenter: Offset = Offset.Unspecified,
     shatterSpec: ShatterSpec = ShatterSpec(),
@@ -158,19 +156,15 @@ internal fun ShatteredImage(
     Box(
         modifier = modifier
     ) {
-        if (!hasBeenShattered) {
-            Image(bitmap = bitmap, contentDescription = null)
-        } else {
-            shards.forEach { shard ->
-                ShatteredPiece(
-                    shard = shard,
-                    originalBitmap = bitmap,
-                    impactPoint = impactPoint,
-                    progress = progress,
-                    shatterSpec = shatterSpec,
-                    showCenterPoint = showCenterPoints
-                )
-            }
+        shards.forEach { shard ->
+            ShatteredPiece(
+                shard = shard,
+                originalBitmap = bitmap,
+                impactPoint = impactPoint,
+                progress = progress,
+                shatterSpec = shatterSpec,
+                showCenterPoint = showCenterPoints
+            )
         }
     }
 }
@@ -262,7 +256,6 @@ private fun ShatteredImageComposablePreview() {
         Box {
             ShatteredImage(
                 bitmap = bitmap,
-                hasBeenShattered = true,
                 progress = .5f,
                 shatterSpec = ShatterSpec(),
                 showCenterPoints = true

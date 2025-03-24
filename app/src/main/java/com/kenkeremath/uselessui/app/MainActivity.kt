@@ -2,13 +2,10 @@ package com.kenkeremath.uselessui.app
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -47,8 +44,8 @@ import androidx.compose.ui.unit.dp
 import com.kenkeremath.uselessui.app.theme.UselessUITheme
 import com.kenkeremath.uselessui.shatter.CaptureMode
 import com.kenkeremath.uselessui.shatter.ShatterSpec
+import com.kenkeremath.uselessui.shatter.ShatterState
 import com.kenkeremath.uselessui.shatter.ShatterableLayout
-import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +63,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ShatterDemoScreen(modifier: Modifier = Modifier) {
-    var isShattered by remember { mutableStateOf(false) }
+    var shatterState by remember { mutableStateOf(ShatterState.Intact) }
     var showCenterPoints by remember { mutableStateOf(false) }
 
     val defaultDuration = 1000L
@@ -118,25 +115,12 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(16.dp)
         )
 
-        val repeatedValue by rememberInfiniteTransition().animateFloat(
-            initialValue = 0f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(
-                    durationMillis = 1200,
-                )
-            )
-        )
-
-        val text = "Shatter Me!"
-        val displayedText = text.substring(0, (text.length * repeatedValue).roundToInt())
         val interactionSource = remember { MutableInteractionSource() }
         var impactOffset by remember { mutableStateOf(Offset.Unspecified) }
 
         ShatterableLayout(
             captureMode = CaptureMode.LAZY,
-            isShattered = isShattered,
-            continueWhenReassembled = true,
+            shatterState = shatterState,
             shatterCenter = impactOffset,
             shatterSpec = shatterSpec,
             showCenterPoints = showCenterPoints,
@@ -146,7 +130,7 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
                         while (true) {
                             val event = awaitPointerEvent()
                             val change = event.changes.firstOrNull()
-                            if (change != null && change.pressed && !isShattered) {
+                            if (change != null && change.pressed && shatterState == ShatterState.Intact) {
                                 impactOffset = change.position
                             }
                         }
@@ -156,7 +140,12 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
                     interactionSource = interactionSource,
                     indication = null
                 ) {
-                    isShattered = !isShattered
+                    val newState = when(shatterState) {
+                        ShatterState.Intact -> ShatterState.Shattered
+                        ShatterState.Shattered -> ShatterState.Intact
+                        ShatterState.Reassembled -> ShatterState.Shattered
+                    }
+                    shatterState = newState
                 }
         ) {
             Box(
@@ -166,7 +155,7 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = displayedText,
+                    text = "Tap to break!",
                     color = MaterialTheme.colorScheme.onPrimary,
                     style = MaterialTheme.typography.headlineMedium
                 )
@@ -205,7 +194,7 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
             label = "Velocity",
             value = velocity,
             onValueChange = { velocity = it },
-            valueRange = 0f..600f
+            valueRange = 0f..2000f
         )
 
         ParameterSlider(
