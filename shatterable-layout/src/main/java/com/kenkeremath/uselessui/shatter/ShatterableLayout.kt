@@ -39,6 +39,7 @@ import androidx.core.graphics.createBitmap
  * @param shatterCenter The center point of the shatter effect, Offset.Unspecified for center
  * @param shatterSpec Configuration for the shatter animation properties
  * @param showCenterPoints Whether to show debug points for the shatter centers
+ * @param overrideProgress Optional progress to override the default animation
  * @param onAnimationCompleted Callback when the animation to the target state completes
  * @param content The content to be displayed and potentially shattered
  */
@@ -51,6 +52,7 @@ fun ShatterableLayout(
     shatterCenter: Offset = Offset.Unspecified,
     shatterSpec: ShatterSpec = ShatterSpec(),
     showCenterPoints: Boolean = false,
+    overrideProgress: Float? = null,
     onAnimationCompleted: (ShatterState) -> Unit = {},
     content: @Composable () -> Unit
 ) {
@@ -63,17 +65,23 @@ fun ShatterableLayout(
         ShatterState.Shattered -> 1f
     }
 
-    val progress by animateFloatAsState(
-        targetValue = targetProgress,
-        animationSpec = tween(
-            durationMillis = shatterSpec.durationMillis.toInt(),
-            easing = shatterSpec.easing
-        ),
-        label = "shatter",
-        finishedListener = { _ ->
-            onAnimationCompleted(shatterState)
-        }
-    )
+    // Use overrideProgress if provided, otherwise animate to targetProgress
+    val progress = if (overrideProgress != null) {
+        overrideProgress
+    } else {
+        val animatedProgress by animateFloatAsState(
+            targetValue = targetProgress,
+            animationSpec = tween(
+                durationMillis = shatterSpec.durationMillis.toInt(),
+                easing = shatterSpec.easing
+            ),
+            label = "shatter",
+            finishedListener = { _ ->
+                onAnimationCompleted(shatterState)
+            }
+        )
+        animatedProgress
+    }
 
     // Handle content key changes by marking the bitmap as invalid
     LaunchedEffect(contentKey) {
