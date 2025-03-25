@@ -1,12 +1,15 @@
 package com.kenkeremath.uselessui.shatter
 
 import android.util.Log
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,7 +65,10 @@ fun ShatterableLayout(
 
     val progress by animateFloatAsState(
         targetValue = targetProgress,
-        animationSpec = tween(durationMillis = shatterSpec.durationMillis.toInt()),
+        animationSpec = tween(
+            durationMillis = shatterSpec.durationMillis.toInt(),
+            easing = shatterSpec.easing
+        ),
         label = "shatter",
         finishedListener = { _ ->
             onAnimationCompleted(shatterState)
@@ -143,7 +149,7 @@ internal fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
 
 /**
  * Controls when the content bitmap is captured in ShatterableLayout.
- * 
+ *
  * This determines the strategy for when to capture the bitmap of the content
  * that will be used for the shatter effect.
  */
@@ -166,19 +172,20 @@ enum class CaptureMode {
 
 /**
  * Configuration for the shatter animation effect.
- * 
+ *
  * This class defines how the shatter animation should behave, including the number of shards,
  * speed, rotation, and transparency of the shattered pieces.
  *
  * Velocity determines how quickly the pieces move and therefore how far they go.
- * All target values represent what the values of those properties should be when 
+ * All target values represent what the values of those properties should be when
  * the shatter has completed.
- * Variation values are the range within which a property will randomly vary for 
- * a given piece. This is important to make all pieces have some slight differences 
+ * Variation values are the range within which a property will randomly vary for
+ * a given piece. This is important to make all pieces have some slight differences
  * in movement.
  *
  * @property durationMillis Duration of the shatter animation in milliseconds
  * @property shardCount Number of pieces the content will be broken into
+ * @property easing the Easing property for the shatter animation. This determines the rate of change
  * @property velocity Base velocity of the shattered pieces
  * @property rotationXTarget Target X-axis rotation of pieces at the end of animation
  * @property rotationYTarget Target Y-axis rotation of pieces at the end of animation
@@ -189,9 +196,11 @@ enum class CaptureMode {
  * @property rotationZVariation Random variation in Z-axis rotation between pieces
  * @property alphaTarget Target transparency of pieces at the end of animation (0 = transparent)
  */
+@Stable
 data class ShatterSpec(
     val durationMillis: Long = 500L,
     val shardCount: Int = 15,
+    val easing: Easing = FastOutSlowInEasing,
     val velocity: Float = 300f,
     val rotationXTarget: Float = 30f,
     val rotationYTarget: Float = 30f,
@@ -205,7 +214,7 @@ data class ShatterSpec(
 
 /**
  * The state that the shattered layout can be in.
- * 
+ *
  * The layout will animate transitions between these states.
  */
 enum class ShatterState {
@@ -214,13 +223,13 @@ enum class ShatterState {
      * This is the normal state where the content is displayed as-is.
      */
     Intact,
-    
+
     /**
      * The layout will render the shattered version of a captured bitmap of the content.
      * In this state, the pieces of the content are animated moving away from each other.
      */
     Shattered,
-    
+
     /**
      * The layout will render the individual pieces of the captured bitmap in their original positions.
      * This state is as if you have tried to reassemble broken shards of something but it's still cracked.

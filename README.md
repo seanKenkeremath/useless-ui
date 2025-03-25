@@ -24,4 +24,3 @@ You can also do this in reverse if you want to "unshatter" something which looks
 * Create a "ShatterablePager"
 * We can avoid creating cropped bitmaps entirely if Compose supports either **1)** `graphicsLayer` animations on Canvas objects (we can crop the parent bitmap in the Canvas) or **2)** cropping inside `graphicsLayer` with an arbitrary path (only simple shapes are currently supported)
 * Capturing of the bitmap and creation of Voronoi cells can be offloaded to a background thread
-* Pass in interpolation properties for shatter animation
