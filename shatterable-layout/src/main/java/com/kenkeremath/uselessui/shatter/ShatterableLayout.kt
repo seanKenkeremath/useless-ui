@@ -25,12 +25,16 @@ import androidx.core.graphics.createBitmap
 /**
  * A composable that can shatter its content when triggered.
  *
+ * This layout captures a bitmap of its content and can animate a shattering effect
+ * when the shatter state changes. The content can be in one of three states:
+ * intact (normal), shattered (broken into pieces), or reassembled (pieces back in place but with cracks).
+ *
  * @param shatterState The current state of the shatter effect (Intact, Shattered, Reassembled)
  * @param modifier Modifier to be applied to the layout
- * @param contentKey A key to invalidate the content bitmap
- * @param captureMode Controls when the content bitmap is captured
+ * @param contentKey A key to invalidate the content bitmap when it changes
+ * @param captureMode Controls when the content bitmap is captured (AUTO or LAZY)
  * @param shatterCenter The center point of the shatter effect, Offset.Unspecified for center
- * @param shatterSpec Configuration for the shatter animation
+ * @param shatterSpec Configuration for the shatter animation properties
  * @param showCenterPoints Whether to show debug points for the shatter centers
  * @param onAnimationCompleted Callback when the animation to the target state completes
  * @param content The content to be displayed and potentially shattered
@@ -138,29 +142,52 @@ fun ShatterableLayout(
 internal fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
 
 /**
- * Controls when the content bitmap is captured in ShatterableLayout
+ * Controls when the content bitmap is captured in ShatterableLayout.
+ * 
+ * This determines the strategy for when to capture the bitmap of the content
+ * that will be used for the shatter effect.
  */
 enum class CaptureMode {
     /**
-     * Automatically recapture when content key changes or size changes
+     * Automatically recapture the bitmap when content key changes or size changes.
+     * This ensures the shattered image always reflects the current content but may
+     * use more resources.
      */
     AUTO,
 
     /**
-     * Only capture the bitmap when transitioning to the shattered state. Invalidate old bitmap when content key or size chagnes
+     * Only capture the bitmap when transitioning to the shattered state.
+     * The old bitmap is invalidated when content key or size changes, but a new
+     * bitmap is only captured when needed. This is more efficient but may not
+     * always reflect the latest content state.
      */
     LAZY,
 }
 
 /**
- * This defines how the shatter should be animated.
+ * Configuration for the shatter animation effect.
+ * 
+ * This class defines how the shatter animation should behave, including the number of shards,
+ * speed, rotation, and transparency of the shattered pieces.
  *
- * Velocity determines how quickly the pieces move and therefore how far they go
+ * Velocity determines how quickly the pieces move and therefore how far they go.
+ * All target values represent what the values of those properties should be when 
+ * the shatter has completed.
+ * Variation values are the range within which a property will randomly vary for 
+ * a given piece. This is important to make all pieces have some slight differences 
+ * in movement.
  *
- * All target values represent what the values of those properties should be when the shatter has completed
- *
- * Variation values are the range within which a property will randomly vary for a property on
- * a given piece. This is important to make all pieces have some slight differences in movement.
+ * @property durationMillis Duration of the shatter animation in milliseconds
+ * @property shardCount Number of pieces the content will be broken into
+ * @property velocity Base velocity of the shattered pieces
+ * @property rotationXTarget Target X-axis rotation of pieces at the end of animation
+ * @property rotationYTarget Target Y-axis rotation of pieces at the end of animation
+ * @property rotationZTarget Target Z-axis rotation of pieces at the end of animation
+ * @property velocityVariation Random variation in velocity between pieces
+ * @property rotationXVariation Random variation in X-axis rotation between pieces
+ * @property rotationYVariation Random variation in Y-axis rotation between pieces
+ * @property rotationZVariation Random variation in Z-axis rotation between pieces
+ * @property alphaTarget Target transparency of pieces at the end of animation (0 = transparent)
  */
 data class ShatterSpec(
     val durationMillis: Long = 500L,
@@ -177,21 +204,27 @@ data class ShatterSpec(
 )
 
 /**
- * The state that the shattered layout can be in. The layout will animate
- * transitions between these states.
- *
- * Intact: The layout is not shattered and will render the live content
- *
- * Shattered: The layout will render the shattered version of a
- * captured bitmap of the content.
- *
- * Reassembled: The layout will render the individual pieces of
- * the captured bitmap in their original positions. This state is as if you have tried to reassemble
- * broken shards of something but it still cracked. In this state the live content will
- * not be displayed, and cracks will still be visible
+ * The state that the shattered layout can be in.
+ * 
+ * The layout will animate transitions between these states.
  */
 enum class ShatterState {
+    /**
+     * The layout is not shattered and will render the live content.
+     * This is the normal state where the content is displayed as-is.
+     */
     Intact,
+    
+    /**
+     * The layout will render the shattered version of a captured bitmap of the content.
+     * In this state, the pieces of the content are animated moving away from each other.
+     */
     Shattered,
+    
+    /**
+     * The layout will render the individual pieces of the captured bitmap in their original positions.
+     * This state is as if you have tried to reassemble broken shards of something but it's still cracked.
+     * In this state, the live content will not be displayed, and cracks will still be visible.
+     */
     Reassembled
 }
