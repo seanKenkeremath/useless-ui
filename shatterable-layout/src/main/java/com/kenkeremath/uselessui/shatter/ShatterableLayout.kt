@@ -1,6 +1,6 @@
 package com.kenkeremath.uselessui.shatter
 
-import android.util.Log
+import android.view.View
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
@@ -115,7 +116,9 @@ fun ShatterableLayout(
                 factory = { ctx ->
                     ComposeView(ctx).apply {
                         setContent {
-                            Box {
+                            Box(modifier = Modifier.graphicsLayer {
+                                alpha = 0f
+                            }) {
                                 content()
                             }
                         }
@@ -126,7 +129,6 @@ fun ShatterableLayout(
                                 val bitmap = createBitmap(width, height)
                                 val canvas = android.graphics.Canvas(bitmap)
                                 draw(canvas)
-                                Log.d("REC", "capturing bitmap")
                                 contentBitmap = bitmap.asImageBitmap()
                                 needsRecapture = false
                             }
@@ -142,6 +144,110 @@ fun ShatterableLayout(
                 progress = progress,
                 shatterSpec = shatterSpec,
                 showCenterPoints = showCenterPoints,
+                modifier = Modifier.size(
+                    size.width.pxToDp(), size.height.pxToDp()
+                )
+            )
+        } else {
+            // Otherwise show the normal content
+            content()
+        }
+    }
+}
+
+@Composable
+fun ShatterableLayout(
+    progress: Float,
+    modifier: Modifier = Modifier,
+    animateProgress: Boolean = false,
+    contentKey: Any? = null,
+    captureMode: CaptureMode = CaptureMode.AUTO,
+    showCenterPoints: Boolean = false,
+    shatterCenter: Offset = Offset.Unspecified,
+    shatterSpec: ShatterSpec = ShatterSpec(),
+    onAnimationCompleted: (Boolean) -> Unit = {},
+    content: @Composable () -> Unit
+) {
+    var size by remember { mutableStateOf(IntSize.Zero) }
+    var contentBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var needsRecapture by remember { mutableStateOf(false) }
+
+    val resolvedProgress = if (animateProgress) {
+        animateFloatAsState(
+            targetValue = progress,
+            animationSpec = tween(
+                durationMillis = shatterSpec.durationMillis.toInt(),
+                easing = shatterSpec.easing
+            ),
+            label = "shatter",
+            finishedListener = { value ->
+                onAnimationCompleted(value == 1f)
+            }
+        ).value
+    } else {
+        progress
+    }
+
+    // Handle content key changes by marking the bitmap as invalid
+    LaunchedEffect(contentKey) {
+        if (contentBitmap != null) {
+            needsRecapture = true
+        }
+    }
+
+    // Handle size changes by marking the bitmap as invalid
+    LaunchedEffect(size) {
+        if (contentBitmap != null &&
+            (contentBitmap!!.width != size.width ||
+                    contentBitmap!!.height != size.height)
+        ) {
+            needsRecapture = true
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .onGloballyPositioned { coordinates ->
+                if (size != coordinates.size) {
+                    size = coordinates.size
+                }
+            }
+    ) {
+        // Capture the content bitmap if needed
+        if ((captureMode != CaptureMode.LAZY || resolvedProgress > 0f) && (contentBitmap == null || needsRecapture) && size.width > 0 && size.height > 0) {
+            AndroidView(
+                factory = { ctx ->
+                    ComposeView(ctx).apply {
+                        // Prevent this from being rendered for the first frame
+                        // if we are starting shattered
+                        visibility = if (resolvedProgress < .1f) View.VISIBLE else View.INVISIBLE
+                        setContent {
+                            Box {
+                                content()
+                            }
+                        }
+
+                        // Capture the bitmap after layout
+                        post {
+                            if (width > 0 && height > 0) {
+                                val bitmap = createBitmap(width, height)
+                                val canvas = android.graphics.Canvas(bitmap)
+                                draw(canvas)
+                                contentBitmap = bitmap.asImageBitmap()
+                                needsRecapture = false
+                            }
+                        }
+                    }
+                }
+            )
+        } else if (contentBitmap != null && resolvedProgress > 0f) {
+            // Show shattered version if we're not intact OR if we're still animating back to intact
+            ShatteredImage(
+                bitmap = contentBitmap!!,
+                shatterCenter = shatterCenter,
+                showCenterPoints = showCenterPoints,
+                progress = resolvedProgress,
+                shatterSpec = shatterSpec,
                 modifier = Modifier.size(
                     size.width.pxToDp(), size.height.pxToDp()
                 )

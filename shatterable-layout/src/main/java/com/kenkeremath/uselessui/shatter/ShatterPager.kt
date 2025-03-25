@@ -1,7 +1,5 @@
 package com.kenkeremath.uselessui.shatter
 
-import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,16 +8,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.abs
@@ -62,7 +52,6 @@ fun ShatterPager(
         pageOffset = pageOffset,
         shatterSpec = shatterSpec,
         captureMode = captureMode,
-        showCenterPoints = showCenterPoints,
         pageContent = pageContent
     )
 }
@@ -103,20 +92,16 @@ fun ShatterPager(
         val shatterProgress = pagerState.getOffsetDistanceInPages(page).absoluteValue
             .coerceIn(0f, 1f)
 
-        val delta = abs(shatterProgress)
-        Log.d("PAGE", "page: $page, $shatterProgress, $delta ${delta < .01f}")
-        val shatterState =
-            if (abs(shatterProgress) < .0001f) ShatterState.Intact else ShatterState.Shattered
+        val progress =
+            if (abs(shatterProgress) < .0001f) 0f else shatterProgress
 
         // Wrap each page in its own ShatterableLayout
         ShatterableLayout(
-            shatterState = shatterState,
-            contentKey = page,
+            progress = progress,
             captureMode = captureMode,
             shatterSpec = shatterSpec,
+            contentKey = page,
             showCenterPoints = showCenterPoints,
-            // TODO: remove this temporary thing and create a second state hoisted constructor
-            overrideProgress = if (shatterState == ShatterState.Intact) 0f else shatterProgress,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(4.dp) // Add some padding around each page

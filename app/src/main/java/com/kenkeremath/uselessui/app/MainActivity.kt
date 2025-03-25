@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.DemoList) }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -98,9 +98,11 @@ fun MainScreen() {
                 onDemoSelected = { screen -> currentScreen = screen },
                 modifier = Modifier.padding(innerPadding)
             )
+
             Screen.ShatterableLayoutDemo -> ShatterDemoScreen(
                 modifier = Modifier.padding(innerPadding)
             )
+
             Screen.ShatterPagerDemo -> ShatterPagerDemoScreen(
                 modifier = Modifier.padding(innerPadding)
             )
@@ -123,7 +125,7 @@ fun DemoListScreen(
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        
+
         ListItem(
             headlineContent = { Text("Shatterable Layout Demo") },
             supportingContent = { Text("Tap to break content into pieces") },
@@ -131,9 +133,9 @@ fun DemoListScreen(
                 .fillMaxWidth()
                 .clickable { onDemoSelected(Screen.ShatterableLayoutDemo) }
         )
-        
+
         Divider()
-        
+
         ListItem(
             headlineContent = { Text("Shatter Pager Demo") },
             supportingContent = { Text("Swipe between pages with shatter effect") },
@@ -152,7 +154,7 @@ sealed class Screen(val title: String) {
 
 @Composable
 fun ShatterDemoScreen(modifier: Modifier = Modifier) {
-    var shatterState by remember { mutableStateOf(ShatterState.Intact) }
+    var progress by remember { mutableFloatStateOf(0f) }
     var showCenterPoints by remember { mutableStateOf(false) }
 
     val defaultDuration = 1000L
@@ -182,7 +184,15 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
     }
 
     val shatterSpec =
-        remember(durationMillis, shardCount, velocity, rotationX, rotationY, rotationZ, alphaTarget) {
+        remember(
+            durationMillis,
+            shardCount,
+            velocity,
+            rotationX,
+            rotationY,
+            rotationZ,
+            alphaTarget
+        ) {
             ShatterSpec(
                 durationMillis = durationMillis,
                 shardCount = shardCount,
@@ -213,10 +223,12 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
         val interactionSource = remember { MutableInteractionSource() }
         var impactOffset by remember { mutableStateOf(Offset.Unspecified) }
         var animating by remember { mutableStateOf(false) }
+        var shattering by remember { mutableStateOf(false) }
 
         ShatterableLayout(
             captureMode = CaptureMode.LAZY,
-            shatterState = shatterState,
+            progress = progress,
+            animateProgress = true,
             shatterCenter = impactOffset,
             shatterSpec = shatterSpec,
             showCenterPoints = showCenterPoints,
@@ -231,7 +243,7 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
                             val change = event.changes.firstOrNull()
                             if (change != null
                                 && !animating && change.pressed
-                                && shatterState == ShatterState.Intact
+                                && progress == 0f
                             ) {
                                 impactOffset = change.position
                             }
@@ -242,12 +254,8 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
                     interactionSource = interactionSource,
                     indication = null
                 ) {
-                    val newState = when (shatterState) {
-                        ShatterState.Intact -> ShatterState.Shattered
-                        ShatterState.Shattered -> ShatterState.Intact
-                        ShatterState.Reassembled -> ShatterState.Shattered
-                    }
-                    shatterState = newState
+                    shattering = !shattering
+                    progress = if (shattering) 1f else 0f
                     animating = true
                 }
         ) {
