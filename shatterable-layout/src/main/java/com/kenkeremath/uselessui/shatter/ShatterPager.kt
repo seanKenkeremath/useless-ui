@@ -9,11 +9,9 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -40,8 +38,8 @@ fun ShatterPager(
     modifier: Modifier = Modifier,
     initialPage: Int = 0,
     pageSpacing: Dp = 8.dp,
-    pageOffset: Float = 0.3f, // Show 30% of adjacent pages by default
-    shatterSpec: ShatterSpec = ShatterSpec(durationMillis = 0), // Duration 0 as we control progress manually
+    pageOffset: Float = 0.15f,
+    shatterSpec: ShatterSpec = ShatterSpec(),
     captureMode: CaptureMode = CaptureMode.LAZY,
     showCenterPoints: Boolean = false,
     pageContent: @Composable (page: Int) -> Unit
@@ -52,6 +50,7 @@ fun ShatterPager(
         modifier = modifier,
         pageSpacing = pageSpacing,
         pageOffset = pageOffset,
+        showCenterPoints = showCenterPoints,
         shatterSpec = shatterSpec,
         captureMode = captureMode,
         pageContent = pageContent
@@ -75,8 +74,8 @@ fun ShatterPager(
     pagerState: PagerState,
     modifier: Modifier = Modifier,
     pageSpacing: Dp = 8.dp,
-    pageOffset: Float = 0.3f, // Show 30% of adjacent pages by default
-    shatterSpec: ShatterSpec = ShatterSpec(durationMillis = 0), // Duration 0 as we control progress manually
+    pageOffset: Float = 0.15f,
+    shatterSpec: ShatterSpec = ShatterSpec(), // Duration 0 as we control progress manually
     captureMode: CaptureMode = CaptureMode.LAZY,
     showCenterPoints: Boolean = false,
     pageContent: @Composable (page: Int) -> Unit
@@ -107,13 +106,6 @@ fun ShatterPager(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(4.dp)
-                .zIndex(
-                    if (page == pagerState.currentPage) {
-                        1f
-                    } else {
-                        0f
-                    }
-                )
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 pageContent(page)

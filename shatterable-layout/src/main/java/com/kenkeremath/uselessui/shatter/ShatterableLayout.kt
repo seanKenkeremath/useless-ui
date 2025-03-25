@@ -163,9 +163,7 @@ enum class CaptureMode {
  * a given piece. This is important to make all pieces have some slight differences
  * in movement.
  *
- * @property durationMillis Duration of the shatter animation in milliseconds
  * @property shardCount Number of pieces the content will be broken into
- * @property easing the Easing property for the shatter animation. This determines the rate of change
  * @property velocity Base velocity of the shattered pieces
  * @property rotationXTarget Target X-axis rotation of pieces at the end of animation
  * @property rotationYTarget Target Y-axis rotation of pieces at the end of animation
@@ -178,7 +176,6 @@ enum class CaptureMode {
  */
 @Stable
 data class ShatterSpec(
-    val durationMillis: Long = 500L,
     val shardCount: Int = 15,
     val easing: Easing = FastOutSlowInEasing,
     val velocity: Float = 300f,

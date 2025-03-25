@@ -1,6 +1,6 @@
-package com.kenkeremath.uselessui.app
+package com.kenkeremath.uselessui.app.ui.screens.shatter
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+import ParameterSlider
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,13 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,13 +42,11 @@ fun ShatterPagerDemoScreen(modifier: Modifier = Modifier) {
     var rotationZ by remember { mutableFloatStateOf(30f) }
     var alphaTarget by remember { mutableFloatStateOf(0.3f) }
     
-    // New parameters for page visibility
-    var pageOffset by remember { mutableFloatStateOf(0.3f) }
+    var pageOffset by remember { mutableFloatStateOf(0.15f) }
     var pageSpacing by remember { mutableFloatStateOf(8f) }
 
     val shatterSpec = remember(shardCount, velocity, rotationX, rotationY, rotationZ, alphaTarget) {
         ShatterSpec(
-            durationMillis = 0, // We control progress manually in ShatterPager
             shardCount = shardCount,
             velocity = velocity,
             rotationXTarget = rotationX,
@@ -75,7 +71,6 @@ fun ShatterPagerDemoScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(16.dp)
         )
 
-        // ShatterPager with demo content
         ShatterPager(
             pageCount = 5,
             shatterSpec = shatterSpec,
@@ -107,34 +102,6 @@ fun ShatterPagerDemoScreen(modifier: Modifier = Modifier) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        // Controls for page visibility
-        Text(
-            text = "Page Visibility",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-        
-        ParameterSlider(
-            label = "Page Offset",
-            value = pageOffset,
-            onValueChange = { pageOffset = it },
-            valueRange = 0f..0.4f
-        )
-        
-        ParameterSlider(
-            label = "Page Spacing",
-            value = pageSpacing,
-            onValueChange = { pageSpacing = it },
-            valueRange = 0f..32f
-        )
-
-        // Controls for the shatter effect
-        Text(
-            text = "Shatter Effect",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(top = 8.dp)
-        )
         
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -144,6 +111,20 @@ fun ShatterPagerDemoScreen(modifier: Modifier = Modifier) {
                 label = "Show Center Points",
                 checked = showCenterPoints,
                 onCheckedChange = { showCenterPoints = it }
+            )
+
+            ParameterSlider(
+                label = "Page Offset",
+                value = pageOffset,
+                onValueChange = { pageOffset = it },
+                valueRange = 0f..0.4f
+            )
+
+            ParameterSlider(
+                label = "Page Spacing",
+                value = pageSpacing,
+                onValueChange = { pageSpacing = it },
+                valueRange = 0f..32f
             )
 
             ParameterSlider(
@@ -239,10 +220,10 @@ private fun SwitchSetting(
 
 private fun getColorForPage(page: Int): Color {
     return when (page % 5) {
-        0 -> Color(0xFF1976D2) // Blue
-        1 -> Color(0xFF388E3C) // Green
-        2 -> Color(0xFFD32F2F) // Red
-        3 -> Color(0xFF7B1FA2) // Purple
-        else -> Color(0xFFFF9800) // Orange
+        0 -> Color(0xFF1976D2)
+        1 -> Color(0xFF388E3C)
+        2 -> Color(0xFFD32F2F)
+        3 -> Color(0xFF7B1FA2)
+        else -> Color(0xFFFF9800)
     }
 } 
