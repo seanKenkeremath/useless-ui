@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 /**
@@ -41,7 +42,6 @@ import kotlin.math.absoluteValue
  * @param showCenterPoints Whether to show debug points for the shatter centers
  * @param pageContent The content to display for each page
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ShatterPager(
     pageCount: Int,
@@ -79,7 +79,6 @@ fun ShatterPager(
  * @param showCenterPoints Whether to show debug points for the shatter centers
  * @param pageContent The content to display for each page
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ShatterPager(
     pagerState: PagerState,
@@ -91,60 +90,33 @@ fun ShatterPager(
     showCenterPoints: Boolean = false,
     pageContent: @Composable (page: Int) -> Unit
 ) {
-    val screenWidth = with(LocalDensity.current) { 1000.dp.toPx() } // Approximate screen width
-    
-    // Calculate the padding needed to show adjacent pages
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
     val sidePadding = (screenWidthDp * pageOffset)
-    
+
     HorizontalPager(
         state = pagerState,
         modifier = modifier,
         pageSpacing = pageSpacing,
-        // This is the key parameter that controls how much of adjacent pages is visible
         contentPadding = PaddingValues(horizontal = sidePadding)
     ) { page ->
-        // Calculate the offset for this specific page
-        val pageOffset = ((page - pagerState.currentPage) - pagerState.currentPageOffsetFraction)
-        
-        // Determine if this page is being swiped to or away from
-        val isCurrentPage = page == pagerState.currentPage
-        val isNextPage = page == pagerState.currentPage + 1
-        val isPreviousPage = page == pagerState.currentPage - 1
-        
-        // Calculate shatter progress for this page
-        val shatterProgress = when {
-            // Current page being swiped away - progress from 0 to 1 as it moves offscreen
-            isCurrentPage -> pagerState.currentPageOffsetFraction.absoluteValue
-            
-            // Next/previous page coming into view - progress from 1 to 0 as it becomes visible
-            isNextPage || isPreviousPage -> (1 - pagerState.currentPageOffsetFraction.absoluteValue)
-            
-            // Offscreen pages - fully shattered
-            else -> 1f
-        }
+        val shatterProgress = pagerState.getOffsetDistanceInPages(page).absoluteValue
+            .coerceIn(0f, 1f)
 
-        // Determine shatter direction based on page position relative to current
-        val isToTheRight = page > pagerState.currentPage
-        val shatterCenter = if (isToTheRight) {
-            Offset(0f, screenWidth / 2) // Shatter from left edge
-        } else {
-            Offset(screenWidth, screenWidth / 2) // Shatter from right edge
-        }
-        
-        // Set shatter state based on progress
-        val shatterState = if (shatterProgress > 0f) ShatterState.Shattered else ShatterState.Intact
-        
+        val delta = abs(shatterProgress)
+        Log.d("PAGE", "page: $page, $shatterProgress, $delta ${delta < .01f}")
+        val shatterState =
+            if (abs(shatterProgress) < .0001f) ShatterState.Intact else ShatterState.Shattered
+
         // Wrap each page in its own ShatterableLayout
         ShatterableLayout(
             shatterState = shatterState,
             contentKey = page,
             captureMode = captureMode,
-            shatterCenter = shatterCenter,
             shatterSpec = shatterSpec,
             showCenterPoints = showCenterPoints,
-            overrideProgress = shatterProgress,
+            // TODO: remove this temporary thing and create a second state hoisted constructor
+            overrideProgress = if (shatterState == ShatterState.Intact) 0f else shatterProgress,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(4.dp) // Add some padding around each page

@@ -52,6 +52,7 @@ fun ShatterableLayout(
     shatterCenter: Offset = Offset.Unspecified,
     shatterSpec: ShatterSpec = ShatterSpec(),
     showCenterPoints: Boolean = false,
+    // TODO: hoist state
     overrideProgress: Float? = null,
     onAnimationCompleted: (ShatterState) -> Unit = {},
     content: @Composable () -> Unit
