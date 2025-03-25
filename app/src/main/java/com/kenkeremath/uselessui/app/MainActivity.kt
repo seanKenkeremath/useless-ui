@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -23,11 +22,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.kenkeremath.uselessui.app.navigation.NavRoutes
 import com.kenkeremath.uselessui.app.theme.UselessUITheme
 import com.kenkeremath.uselessui.app.ui.screens.shatter.ShatterPagerDemoScreen
 import com.kenkeremath.uselessui.app.ui.screens.shatter.ShatterableLayoutDemoScreen
@@ -47,15 +48,17 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-    var currentScreen by remember { mutableStateOf<Screen>(Screen.DemoList) }
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = currentScreen.title) },
+                title = { Text(text = getScreenTitle(currentRoute)) },
                 navigationIcon = {
-                    if (currentScreen != Screen.DemoList) {
-                        IconButton(onClick = { currentScreen = Screen.DemoList }) {
+                    if (currentRoute != NavRoutes.DemoList.route) {
+                        IconButton(onClick = { navController.navigateUp() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back"
@@ -66,26 +69,29 @@ fun MainScreen() {
             )
         }
     ) { innerPadding ->
-        when (currentScreen) {
-            Screen.DemoList -> DemoListScreen(
-                onDemoSelected = { screen -> currentScreen = screen },
-                modifier = Modifier.padding(innerPadding)
-            )
-
-            Screen.ShatterableLayoutDemo -> ShatterableLayoutDemoScreen(
-                modifier = Modifier.padding(innerPadding)
-            )
-
-            Screen.ShatterPagerDemo -> ShatterPagerDemoScreen(
-                modifier = Modifier.padding(innerPadding)
-            )
+        NavHost(
+            navController = navController,
+            startDestination = NavRoutes.DemoList.route,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(NavRoutes.DemoList.route) {
+                DemoListScreen(
+                    onDemoSelected = { route -> navController.navigate(route) }
+                )
+            }
+            composable(NavRoutes.ShatterableLayoutDemo.route) {
+                ShatterableLayoutDemoScreen()
+            }
+            composable(NavRoutes.ShatterPagerDemo.route) {
+                ShatterPagerDemoScreen()
+            }
         }
     }
 }
 
 @Composable
 fun DemoListScreen(
-    onDemoSelected: (Screen) -> Unit,
+    onDemoSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -104,7 +110,7 @@ fun DemoListScreen(
             supportingContent = { Text("Tap to break content into pieces") },
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onDemoSelected(Screen.ShatterableLayoutDemo) }
+                .clickable { onDemoSelected(NavRoutes.ShatterableLayoutDemo.route) }
         )
 
         HorizontalDivider()
@@ -114,13 +120,19 @@ fun DemoListScreen(
             supportingContent = { Text("Swipe between pages with shatter effect") },
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onDemoSelected(Screen.ShatterPagerDemo) }
+                .clickable { onDemoSelected(NavRoutes.ShatterPagerDemo.route) }
         )
     }
 }
 
-sealed class Screen(val title: String) {
-    object DemoList : Screen("Useless UI Demos")
-    object ShatterableLayoutDemo : Screen("Shatterable Layout Demo")
-    object ShatterPagerDemo : Screen("Shatter Pager Demo")
+/**
+ * Returns the screen title based on the current route
+ */
+private fun getScreenTitle(route: String?): String {
+    return when (route) {
+        NavRoutes.DemoList.route -> "Useless UI Demos"
+        NavRoutes.ShatterableLayoutDemo.route -> "Shatterable Layout Demo"
+        NavRoutes.ShatterPagerDemo.route -> "Shatter Pager Demo"
+        else -> "Useless UI Demos"
+    }
 }
