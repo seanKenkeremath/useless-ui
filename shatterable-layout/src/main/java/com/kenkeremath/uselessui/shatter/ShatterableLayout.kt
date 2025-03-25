@@ -164,6 +164,7 @@ enum class CaptureMode {
  */
 data class ShatterSpec(
     val durationMillis: Long = 500L,
+    val shardCount: Int = 15,
     val velocity: Float = 300f,
     val rotationXTarget: Float = 30f,
     val rotationYTarget: Float = 30f,

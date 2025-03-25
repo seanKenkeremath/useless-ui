@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,8 @@ import com.kenkeremath.uselessui.shatter.CaptureMode
 import com.kenkeremath.uselessui.shatter.ShatterSpec
 import com.kenkeremath.uselessui.shatter.ShatterState
 import com.kenkeremath.uselessui.shatter.ShatterableLayout
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +69,7 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
     var showCenterPoints by remember { mutableStateOf(false) }
 
     val defaultDuration = 1000L
+    val defaultShardCount = 15
     val defaultVelocity = 300f
     val defaultRotationX = 30f
     val defaultRotationY = 30f
@@ -73,6 +77,7 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
     val defaultAlphaTarget = 0.3f
 
     var durationMillis by remember { mutableLongStateOf(defaultDuration) }
+    var shardCount by remember { mutableIntStateOf(defaultShardCount) }
     var velocity by remember { mutableFloatStateOf(defaultVelocity) }
     var rotationX by remember { mutableFloatStateOf(defaultRotationX) }
     var rotationY by remember { mutableFloatStateOf(defaultRotationY) }
@@ -81,6 +86,7 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
 
     fun resetParameters() {
         durationMillis = defaultDuration
+        shardCount = defaultShardCount
         velocity = defaultVelocity
         rotationX = defaultRotationX
         rotationY = defaultRotationY
@@ -89,9 +95,10 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
     }
 
     val shatterSpec =
-        remember(durationMillis, velocity, rotationX, rotationY, rotationZ, alphaTarget) {
+        remember(durationMillis, shardCount, velocity, rotationX, rotationY, rotationZ, alphaTarget) {
             ShatterSpec(
                 durationMillis = durationMillis,
+                shardCount = shardCount,
                 velocity = velocity,
                 rotationXTarget = rotationX,
                 rotationYTarget = rotationY,
@@ -199,6 +206,14 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
         )
 
         ParameterSlider(
+            label = "Number of shards",
+            value = shardCount.toFloat(),
+            onValueChange = { shardCount = it.toInt() },
+            valueRange = 0f..100f,
+            showAsInt = true,
+        )
+
+        ParameterSlider(
             label = "Velocity",
             value = velocity,
             onValueChange = { velocity = it },
@@ -251,15 +266,27 @@ private fun ParameterSlider(
     value: Float,
     onValueChange: (Float) -> Unit,
     valueRange: ClosedFloatingPointRange<Float>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showAsInt: Boolean = false,
 ) {
+
+    val intFormat = remember {
+        val df = DecimalFormat("#")
+        df.roundingMode = RoundingMode.CEILING
+        df
+    }
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(text = label)
-            Text(text = String.format("%.1f", value))
+            val formattedValue = if (!showAsInt) {
+                String.format("%.1f", value)
+            } else {
+                intFormat.format(value)
+            }
+            Text(text = formattedValue)
         }
         Slider(
             value = value,

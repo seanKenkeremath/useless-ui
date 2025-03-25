@@ -134,8 +134,9 @@ internal fun ShatteredImage(
 
     val width = bitmap.width.toFloat()
     val height = bitmap.height.toFloat()
-    val shards = remember(bitmap) {
-        generateVoronoiShards(10, width, height).map { path ->
+    val shardCount = shatterSpec.shardCount
+    val shards = remember(bitmap, shardCount) {
+        generateVoronoiShards(shardCount, width, height).map { path ->
             val fragmentBounds = RectF()
             path.path.asAndroidPath().computeBounds(fragmentBounds, true)
             ShardData(
