@@ -6,6 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -23,7 +25,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -54,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import com.kenkeremath.uselessui.app.theme.UselessUITheme
 import com.kenkeremath.uselessui.shatter.CaptureMode
 import com.kenkeremath.uselessui.shatter.ShatterSpec
-import com.kenkeremath.uselessui.shatter.ShatterState
 import com.kenkeremath.uselessui.shatter.ShatterableLayout
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -154,7 +154,7 @@ sealed class Screen(val title: String) {
 
 @Composable
 fun ShatterDemoScreen(modifier: Modifier = Modifier) {
-    var progress by remember { mutableFloatStateOf(0f) }
+    var targetProgress by remember { mutableFloatStateOf(0f) }
     var showCenterPoints by remember { mutableStateOf(false) }
 
     val defaultDuration = 1000L
@@ -224,17 +224,24 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
         var impactOffset by remember { mutableStateOf(Offset.Unspecified) }
         var animating by remember { mutableStateOf(false) }
         var shattering by remember { mutableStateOf(false) }
+        val progress by animateFloatAsState(
+            targetValue = targetProgress,
+            animationSpec = tween(
+                durationMillis = shatterSpec.durationMillis.toInt(),
+                easing = shatterSpec.easing
+            ),
+            label = "shatter",
+            finishedListener = { _ ->
+                animating = false
+            }
+        )
 
         ShatterableLayout(
             captureMode = CaptureMode.LAZY,
             progress = progress,
-            animateProgress = true,
             shatterCenter = impactOffset,
             shatterSpec = shatterSpec,
             showCenterPoints = showCenterPoints,
-            onAnimationCompleted = {
-                animating = false
-            },
             modifier = Modifier
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
@@ -255,7 +262,7 @@ fun ShatterDemoScreen(modifier: Modifier = Modifier) {
                     indication = null
                 ) {
                     shattering = !shattering
-                    progress = if (shattering) 1f else 0f
+                    targetProgress = if (shattering) 1f else 0f
                     animating = true
                 }
         ) {

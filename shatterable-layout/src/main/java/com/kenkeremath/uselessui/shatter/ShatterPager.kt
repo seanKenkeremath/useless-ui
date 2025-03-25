@@ -9,9 +9,11 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -104,7 +106,14 @@ fun ShatterPager(
             showCenterPoints = showCenterPoints,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(4.dp) // Add some padding around each page
+                .padding(4.dp)
+                .zIndex(
+                    if (page == pagerState.currentPage) {
+                        1f
+                    } else {
+                        0f
+                    }
+                )
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 pageContent(page)

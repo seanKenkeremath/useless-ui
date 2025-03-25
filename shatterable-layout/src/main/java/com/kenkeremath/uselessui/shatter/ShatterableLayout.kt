@@ -3,8 +3,6 @@ package com.kenkeremath.uselessui.shatter
 import android.view.View
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -18,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
@@ -29,164 +26,32 @@ import androidx.core.graphics.createBitmap
 /**
  * A composable that can shatter its content when triggered.
  *
- * This layout captures a bitmap of its content and can animate a shattering effect
- * when the shatter state changes. The content can be in one of three states:
- * intact (normal), shattered (broken into pieces), or reassembled (pieces back in place but with cracks).
+ * This layout captures a bitmap of its content and can render its content as a shattered image
+ * based on the ShatterSpec parameters passed in.
  *
- * @param shatterState The current state of the shatter effect (Intact, Shattered, Reassembled)
+ * @param progress How far along (0..1f) the shatter effect should be rendered. 1f is completely shattered, 0f is intact
  * @param modifier Modifier to be applied to the layout
  * @param contentKey A key to invalidate the content bitmap when it changes
  * @param captureMode Controls when the content bitmap is captured (AUTO or LAZY)
  * @param shatterCenter The center point of the shatter effect, Offset.Unspecified for center
  * @param shatterSpec Configuration for the shatter animation properties
  * @param showCenterPoints Whether to show debug points for the shatter centers
- * @param overrideProgress Optional progress to override the default animation
- * @param onAnimationCompleted Callback when the animation to the target state completes
  * @param content The content to be displayed and potentially shattered
  */
 @Composable
 fun ShatterableLayout(
-    shatterState: ShatterState,
-    modifier: Modifier = Modifier,
-    contentKey: Any? = null,
-    captureMode: CaptureMode = CaptureMode.AUTO,
-    shatterCenter: Offset = Offset.Unspecified,
-    shatterSpec: ShatterSpec = ShatterSpec(),
-    showCenterPoints: Boolean = false,
-    // TODO: hoist state
-    overrideProgress: Float? = null,
-    onAnimationCompleted: (ShatterState) -> Unit = {},
-    content: @Composable () -> Unit
-) {
-    var size by remember { mutableStateOf(IntSize.Zero) }
-    var contentBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
-    var needsRecapture by remember { mutableStateOf(false) }
-
-    val targetProgress = when (shatterState) {
-        ShatterState.Intact, ShatterState.Reassembled -> 0f
-        ShatterState.Shattered -> 1f
-    }
-
-    // Use overrideProgress if provided, otherwise animate to targetProgress
-    val progress = if (overrideProgress != null) {
-        overrideProgress
-    } else {
-        val animatedProgress by animateFloatAsState(
-            targetValue = targetProgress,
-            animationSpec = tween(
-                durationMillis = shatterSpec.durationMillis.toInt(),
-                easing = shatterSpec.easing
-            ),
-            label = "shatter",
-            finishedListener = { _ ->
-                onAnimationCompleted(shatterState)
-            }
-        )
-        animatedProgress
-    }
-
-    // Handle content key changes by marking the bitmap as invalid
-    LaunchedEffect(contentKey) {
-        if (contentBitmap != null) {
-            needsRecapture = true
-        }
-    }
-
-    // Handle size changes by marking the bitmap as invalid
-    LaunchedEffect(size) {
-        if (contentBitmap != null &&
-            (contentBitmap!!.width != size.width ||
-                    contentBitmap!!.height != size.height)
-        ) {
-            needsRecapture = true
-        }
-    }
-
-    Box(
-        modifier = modifier
-            .onGloballyPositioned { coordinates ->
-                if (size != coordinates.size) {
-                    size = coordinates.size
-                }
-            }
-    ) {
-        // Capture the content bitmap if needed
-        if ((captureMode != CaptureMode.LAZY || shatterState != ShatterState.Intact) && (contentBitmap == null || needsRecapture) && size.width > 0 && size.height > 0) {
-            AndroidView(
-                factory = { ctx ->
-                    ComposeView(ctx).apply {
-                        setContent {
-                            Box(modifier = Modifier.graphicsLayer {
-                                alpha = 0f
-                            }) {
-                                content()
-                            }
-                        }
-
-                        // Capture the bitmap after layout
-                        post {
-                            if (width > 0 && height > 0) {
-                                val bitmap = createBitmap(width, height)
-                                val canvas = android.graphics.Canvas(bitmap)
-                                draw(canvas)
-                                contentBitmap = bitmap.asImageBitmap()
-                                needsRecapture = false
-                            }
-                        }
-                    }
-                }
-            )
-        } else if (contentBitmap != null && (shatterState != ShatterState.Intact || progress > 0f)) {
-            // Show shattered version if we're not intact OR if we're still animating back to intact
-            ShatteredImage(
-                bitmap = contentBitmap!!,
-                shatterCenter = shatterCenter,
-                progress = progress,
-                shatterSpec = shatterSpec,
-                showCenterPoints = showCenterPoints,
-                modifier = Modifier.size(
-                    size.width.pxToDp(), size.height.pxToDp()
-                )
-            )
-        } else {
-            // Otherwise show the normal content
-            content()
-        }
-    }
-}
-
-@Composable
-fun ShatterableLayout(
     progress: Float,
     modifier: Modifier = Modifier,
-    animateProgress: Boolean = false,
     contentKey: Any? = null,
     captureMode: CaptureMode = CaptureMode.AUTO,
     showCenterPoints: Boolean = false,
     shatterCenter: Offset = Offset.Unspecified,
     shatterSpec: ShatterSpec = ShatterSpec(),
-    onAnimationCompleted: (Boolean) -> Unit = {},
     content: @Composable () -> Unit
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
     var contentBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var needsRecapture by remember { mutableStateOf(false) }
-
-    val resolvedProgress = if (animateProgress) {
-        animateFloatAsState(
-            targetValue = progress,
-            animationSpec = tween(
-                durationMillis = shatterSpec.durationMillis.toInt(),
-                easing = shatterSpec.easing
-            ),
-            label = "shatter",
-            finishedListener = { value ->
-                onAnimationCompleted(value == 1f)
-            }
-        ).value
-    } else {
-        progress
-    }
 
     // Handle content key changes by marking the bitmap as invalid
     LaunchedEffect(contentKey) {
@@ -214,13 +79,13 @@ fun ShatterableLayout(
             }
     ) {
         // Capture the content bitmap if needed
-        if ((captureMode != CaptureMode.LAZY || resolvedProgress > 0f) && (contentBitmap == null || needsRecapture) && size.width > 0 && size.height > 0) {
+        if ((captureMode != CaptureMode.LAZY || progress > 0f) && (contentBitmap == null || needsRecapture) && size.width > 0 && size.height > 0) {
             AndroidView(
                 factory = { ctx ->
                     ComposeView(ctx).apply {
                         // Prevent this from being rendered for the first frame
                         // if we are starting shattered
-                        visibility = if (resolvedProgress < .1f) View.VISIBLE else View.INVISIBLE
+                        visibility = if (progress < .1f) View.VISIBLE else View.INVISIBLE
                         setContent {
                             Box {
                                 content()
@@ -240,19 +105,19 @@ fun ShatterableLayout(
                     }
                 }
             )
-        } else if (contentBitmap != null && resolvedProgress > 0f) {
+        } else if (contentBitmap != null && progress > 0f) {
             // Show shattered version if we're not intact OR if we're still animating back to intact
             ShatteredImage(
                 bitmap = contentBitmap!!,
                 shatterCenter = shatterCenter,
                 showCenterPoints = showCenterPoints,
-                progress = resolvedProgress,
+                progress = progress,
                 shatterSpec = shatterSpec,
                 modifier = Modifier.size(
                     size.width.pxToDp(), size.height.pxToDp()
                 )
             )
-        } else {
+        } else if (progress < 0.1f) {
             // Otherwise show the normal content
             content()
         }
@@ -326,29 +191,3 @@ data class ShatterSpec(
     val rotationZVariation: Float = 10f,
     val alphaTarget: Float = 0f,
 )
-
-/**
- * The state that the shattered layout can be in.
- *
- * The layout will animate transitions between these states.
- */
-enum class ShatterState {
-    /**
-     * The layout is not shattered and will render the live content.
-     * This is the normal state where the content is displayed as-is.
-     */
-    Intact,
-
-    /**
-     * The layout will render the shattered version of a captured bitmap of the content.
-     * In this state, the pieces of the content are animated moving away from each other.
-     */
-    Shattered,
-
-    /**
-     * The layout will render the individual pieces of the captured bitmap in their original positions.
-     * This state is as if you have tried to reassemble broken shards of something but it's still cracked.
-     * In this state, the live content will not be displayed, and cracks will still be visible.
-     */
-    Reassembled
-}
