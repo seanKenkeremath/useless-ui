@@ -106,7 +106,7 @@ fun DemoListScreen(
         )
 
         ListItem(
-            headlineContent = { Text("Shatterable Layout Demo") },
+            headlineContent = { Text("ShatterableLayout Demo") },
             supportingContent = { Text("Tap to break content into pieces") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -116,7 +116,7 @@ fun DemoListScreen(
         HorizontalDivider()
 
         ListItem(
-            headlineContent = { Text("Shatter Pager Demo") },
+            headlineContent = { Text("ShatterPager Demo") },
             supportingContent = { Text("Swipe between pages with shatter effect") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -131,8 +131,8 @@ fun DemoListScreen(
 private fun getScreenTitle(route: String?): String {
     return when (route) {
         NavRoutes.DemoList.route -> "Useless UI Demos"
-        NavRoutes.ShatterableLayoutDemo.route -> "Shatterable Layout Demo"
-        NavRoutes.ShatterPagerDemo.route -> "Shatter Pager Demo"
+        NavRoutes.ShatterableLayoutDemo.route -> "ShatterableLayout Demo"
+        NavRoutes.ShatterPagerDemo.route -> "ShatterPager Demo"
         else -> "Useless UI Demos"
     }
 }

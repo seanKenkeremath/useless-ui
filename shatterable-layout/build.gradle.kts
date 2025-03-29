@@ -65,7 +65,7 @@ mavenPublishing {
     )
 
     pom {
-        name.set("Shatterable Layout")
+        name.set("ShatterableLayout")
         description.set("A Compose UI component that can shatter into pieces")
     }
 } 

@@ -5,11 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -29,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastRoundToInt
 import com.kenkeremath.uselessui.shatter.ShatterPager
 import com.kenkeremath.uselessui.shatter.ShatterSpec
 
@@ -41,8 +44,6 @@ fun ShatterPagerDemoScreen(modifier: Modifier = Modifier) {
     var rotationY by remember { mutableFloatStateOf(30f) }
     var rotationZ by remember { mutableFloatStateOf(30f) }
     var alphaTarget by remember { mutableFloatStateOf(0.3f) }
-    
-    var pageOffset by remember { mutableFloatStateOf(0.15f) }
     var pageSpacing by remember { mutableFloatStateOf(8f) }
 
     val shatterSpec = remember(shardCount, velocity, rotationX, rotationY, rotationZ, alphaTarget) {
@@ -71,11 +72,14 @@ fun ShatterPagerDemoScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(16.dp)
         )
 
+        val pagerState = rememberPagerState { 5 }
+
         ShatterPager(
-            pageCount = 5,
+            state = pagerState,
             shatterSpec = shatterSpec,
             showCenterPoints = showCenterPoints,
-            pageOffset = pageOffset,
+            contentPadding = PaddingValues(horizontal = 64.dp),
+            beyondViewportPageCount = 3,
             pageSpacing = pageSpacing.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -111,13 +115,6 @@ fun ShatterPagerDemoScreen(modifier: Modifier = Modifier) {
                 label = "Show Center Points",
                 checked = showCenterPoints,
                 onCheckedChange = { showCenterPoints = it }
-            )
-
-            ParameterSlider(
-                label = "Page Offset",
-                value = pageOffset,
-                onValueChange = { pageOffset = it },
-                valueRange = 0f..0.4f
             )
 
             ParameterSlider(
@@ -178,7 +175,6 @@ fun ShatterPagerDemoScreen(modifier: Modifier = Modifier) {
                     rotationY = 30f
                     rotationZ = 30f
                     alphaTarget = 0.3f
-                    pageOffset = 0.3f
                     pageSpacing = 8f
                 },
                 modifier = Modifier
