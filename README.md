@@ -10,7 +10,7 @@ I will be adding to this over time as I get inspiration, tinker with things, and
 
 | ShatterableLayout | ShatterPager |
 | --- | --- |
-| <img src="images/shatterable_layout_demo.gif" width="300"> | <img src="images/shatter_pager_demo.gif" width="300"> |
+| <img src="images/shatterable_layout_demo.gif" width="300"> | <img src="images/shatterpager_demo.gif" width="300"> |
 
 This is a Layout that allows it's children to be shattered into many pieces. The exact properties of this shattering are configurable via `ShatterSpec`. This Layout captures a bitmap of its content (the timing of this can be controlled via `CaptureMode`) and then uses that for shattering. The shattering is done using a Voronoi Diagram algorithm to create non-overlapping random polygons. I was inspired by the glass shattering transition in Powerpoint, which I recall fondly adding to 
 
