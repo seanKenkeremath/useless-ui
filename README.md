@@ -1,4 +1,4 @@
-# Useless UI (WIP)
+#  🤷‍♂️ Useless UI 🤷‍♂️
 
 Useless UI is a Jetpack Compose library containing fun, but probably useless UI components. My goal is for each component module to be available as an independent Gradle dependency and also as a suite that can be imported as one dependency. This repo also contains a sample app to showcase these components.
 
@@ -12,9 +12,18 @@ I will be adding to this over time as I get inspiration, tinker with things, and
 | --- | --- |
 | <img src="images/shatterable_layout_demo.gif" width="300"> | <img src="images/shatterpager_demo.gif" width="300"> |
 
-This is a Layout that allows it's children to be shattered into many pieces. The exact properties of this shattering are configurable via `ShatterSpec`. This Layout captures a bitmap of its content (the timing of this can be controlled via `CaptureMode`) and then uses that for shattering. The shattering is done using a Voronoi Diagram algorithm to create non-overlapping random polygons. I was inspired by the glass shattering transition in Powerpoint, which I recall fondly adding to 
+This component allows its children to be shattered into many pieces. The exact properties of this shattering are configurable via `ShatterSpec`. `ShatterableLayout` captures a bitmap of its content (the timing of this can be controlled via `CaptureMode`) and then uses that for the shattering effect. The shattering is done using a Voronoi Diagram algorithm to create non-overlapping random polygons. I was inspired by the glass shattering transition in Powerpoint, which I recall fondly adding to all of my presentations despite being completely unnecessary and annoying.
 
 You can also do this in reverse if you want to "unshatter" something which looks neat.
+
+#### Installation
+[![](https://img.shields.io/maven-central/v/io.github.seankenkeremath/shatterable-layout)](https://search.maven.org/artifact/io.github.seankenkeremath/shatterable-layout)
+
+```
+dependencies {
+    implementation("io.github.seankenkeremath:shatterable-layout:0.1.0") // Replace with latest version above
+}
+```
 
 #### Optimizations
 * Individual shards are rendered using cropped, smaller bitmaps to conserve memory
