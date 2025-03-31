@@ -22,4 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "Useless UI"
 include(":app")
 include(":shatterable-layout")
- 
+include(":waves")

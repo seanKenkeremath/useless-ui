@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.kenkeremath.uselessui.shatter"
+    namespace = "com.kenkeremath.uselessui.waves"
     compileSdk = 35
 
     defaultConfig {
@@ -45,7 +45,7 @@ dependencies {
     implementation(libs.androidx.material3)
 
     implementation(libs.jts.core)
-    
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -60,12 +60,12 @@ val moduleVersion = "0.1.0"
 mavenPublishing {
     coordinates(
         groupId = project.property("GROUP") as String,
-        artifactId = "shatterable-layout",
+        artifactId = "waves",
         version = moduleVersion
     )
 
     pom {
-        name.set("ShatterableLayout")
-        description.set("A Compose UI component that can shatter into pieces")
+        name.set("Waves")
+        description.set("Components for creating wave animations")
     }
-} 
+}
