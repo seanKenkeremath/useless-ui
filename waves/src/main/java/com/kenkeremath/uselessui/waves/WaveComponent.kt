@@ -180,34 +180,22 @@ fun WavyLine(
     Canvas(
         modifier = modifier
     ) {
-        val wl = waveLength.toPx()
-        val amplitude = crestHeight.toPx()
-        val yShift = if (centerWave) size.height / 2 else amplitude
-        val stretch = 2.pi() / wl
-        val xShift = wave * 2.pi()
-        val stroke = strokeWidth.toPx()
-
-        fun sinY(x: Float): Float {
-            return amplitude * sin(stretch * x - xShift) + yShift
-        }
-
-        val segmentLength = wl / 10f
-        val numSegments = (size.width / segmentLength).roundToInt()
-
-        val path = Path().apply {
-            var pointX = 0f
-            moveTo(0f, sinY(0f))
-            for (segment in 1..numSegments) {
-                pointX = min(pointX + segmentLength, size.width)
-                val pointY = sinY(pointX)
-                lineTo(pointX, pointY)
-            }
-        }
+        // For horizontal line, use our utility function
+        val startPoint = Offset(0f, if (centerWave) size.height / 2 else crestHeight.toPx())
+        val endPoint = Offset(size.width, if (centerWave) size.height / 2 else crestHeight.toPx())
+        
+        val path = createWavyPath(
+            animationProgress = wave,
+            crestHeight = crestHeight,
+            waveLength = waveLength,
+            startPoint = startPoint,
+            endPoint = endPoint
+        )
 
         drawPath(
             path = path,
             color = color,
-            style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke)
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokeWidth.toPx())
         )
     }
 }
@@ -248,5 +236,39 @@ fun WavyLineCenteredPreview() {
             color = Color.Red,
             crestHeight = 10.dp
         )
+    }
+}
+
+@Preview
+@Composable
+fun WavyLineDiagonalPreview() {
+    Surface(
+        modifier = Modifier
+            .height(100.dp)
+            .fillMaxWidth(),
+        color = Color.White,
+    ) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+        ) {
+            val startPoint = Offset(0f, 0f)
+            val endPoint = Offset(size.width, size.height)
+            
+            val path = createWavyPath(
+                animationProgress = 0f,
+                crestHeight = 8.dp,
+                waveLength = 60.dp,
+                startPoint = startPoint,
+                endPoint = endPoint
+            )
+            
+            drawPath(
+                path = path,
+                color = Color.Red,
+                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx())
+            )
+        }
     }
 }
