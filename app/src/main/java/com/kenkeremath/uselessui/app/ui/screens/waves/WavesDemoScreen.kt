@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.kenkeremath.uselessui.waves.WavyBox
 import com.kenkeremath.uselessui.waves.WavyLine
 import com.kenkeremath.uselessui.waves.WavyLoadingIndicator
+import com.kenkeremath.uselessui.waves.WavyBoxSpec
 
 @Composable
 fun WavesDemoScreen() {
@@ -130,19 +131,25 @@ fun WavesDemoScreen() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Outlined Wavy Box")
+                Text("Horizontal Waves Only (Top & Bottom)")
                 Box(
                     modifier = Modifier
                         .size(180.dp)
                         .padding(vertical = 8.dp)
                 ) {
                     WavyBox(
+                        spec = WavyBoxSpec(
+                            topWavy = true,
+                            rightWavy = false,
+                            bottomWavy = true,
+                            leftWavy = false
+                        ),
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.primary,
                         crestHeight = 6.dp
                     ) {
                         Text(
-                            "Wavy Box Content",
+                            "Horizontal\nWaves",
                             textAlign = TextAlign.Center
                         )
                     }
@@ -150,58 +157,145 @@ fun WavesDemoScreen() {
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                Text("Filled Wavy Box")
+                Text("Vertical Waves Only (Left & Right)")
                 Box(
                     modifier = Modifier
                         .size(180.dp)
                         .padding(vertical = 8.dp)
                 ) {
                     WavyBox(
+                        spec = WavyBoxSpec(
+                            topWavy = false,
+                            rightWavy = true,
+                            bottomWavy = false,
+                            leftWavy = true
+                        ),
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.secondary,
                         filled = true,
-                        crestHeight = 8.dp,
-                        waveLength = 60.dp,
-                        animationDurationMillis = 1500
+                        crestHeight = 6.dp
                     ) {
                         Text(
-                            "Filled Wavy Box",
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.titleLarge
+                            "Vertical\nWaves",
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                Text("Custom Wavy Box")
+                Text("All Sides Wavy")
                 Box(
                     modifier = Modifier
-                        .size(200.dp)
+                        .size(180.dp)
                         .padding(vertical = 8.dp)
                 ) {
                     WavyBox(
+                        spec = WavyBoxSpec(
+                            topWavy = true,
+                            rightWavy = true,
+                            bottomWavy = true,
+                            leftWavy = true
+                        ),
                         modifier = Modifier.fillMaxSize(),
                         color = Color(0xFF6200EA),
                         filled = true,
                         fillColor = Color(0x336200EA),
+                        crestHeight = 8.dp,
+                        waveLength = 60.dp,
+                        animationDurationMillis = 1500
+                    ) {
+                        Text(
+                            "All Sides\nWavy",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Text("Alternating Sides (Top & Left)")
+                Box(
+                    modifier = Modifier
+                        .size(180.dp)
+                        .padding(vertical = 8.dp)
+                ) {
+                    WavyBox(
+                        spec = WavyBoxSpec(
+                            topWavy = true,
+                            rightWavy = false,
+                            bottomWavy = false,
+                            leftWavy = true
+                        ),
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.tertiary,
+                        filled = true,
                         crestHeight = 10.dp,
                         waveLength = 50.dp,
-                        strokeWidth = 3.dp,
-                        animationDurationMillis = 2000
+                        strokeWidth = 3.dp
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                "Custom",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                "Wavy Box",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
+                        Text(
+                            "Top & Left\nWavy",
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("Alternating Sides (Bottom & Right)")
+                Box(
+                    modifier = Modifier
+                        .size(180.dp)
+                        .padding(vertical = 8.dp)
+                ) {
+                    WavyBox(
+                        spec = WavyBoxSpec(
+                            topWavy = false,
+                            rightWavy = true,
+                            bottomWavy = true,
+                            leftWavy = false
+                        ),
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.tertiary,
+                        filled = true,
+                        crestHeight = 10.dp,
+                        waveLength = 50.dp,
+                        strokeWidth = 3.dp
+                    ) {
+                        Text(
+                            "Bottom & Right\nWavy",
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Text("No Waves (Regular Box)")
+                Box(
+                    modifier = Modifier
+                        .size(180.dp)
+                        .padding(vertical = 8.dp)
+                ) {
+                    WavyBox(
+                        spec = WavyBoxSpec(
+                            topWavy = false,
+                            rightWavy = false,
+                            bottomWavy = false,
+                            leftWavy = false
+                        ),
+                        modifier = Modifier.fillMaxSize(),
+                        color = Color.Gray,
+                        filled = true,
+                        fillColor = Color.LightGray,
+                        strokeWidth = 2.dp
+                    ) {
+                        Text(
+                            "Regular Box\n(No Waves)",
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
