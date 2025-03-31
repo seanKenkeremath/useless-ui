@@ -18,27 +18,20 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.roundToInt
-import kotlin.math.sin
 
 @Composable
 fun WavyBox(
     spec: WavyBoxSpec,
+    style: WavyBoxStyle,
     modifier: Modifier = Modifier,
-    crestHeight: Dp = 4.dp,
-    waveLength: Dp = 80.dp,
-    color: Color = Color.Blue,
-    strokeWidth: Dp = 2.dp,
-    filled: Boolean = false,
-    fillColor: Color = color.copy(alpha = 0.2f),
     animationDurationMillis: Int = 1000,
     content: @Composable () -> Unit = {}
 ) {
@@ -56,138 +49,186 @@ fun WavyBox(
         Canvas(
             modifier = Modifier.fillMaxSize()
         ) {
-            val wl = waveLength.toPx()
-            val amplitude = crestHeight.toPx()
-            val stretch = 2.pi() / wl
-            val xShift = wave * 2.pi()
-            val stroke = strokeWidth.toPx()
+            val path = createWavyBoxPath(
+                size = size,
+                spec = spec,
+                wave = wave,
+                crestHeight = spec.crestHeight,
+                waveLength = spec.waveLength
+            )
 
-            fun sinY(x: Float, isTop: Boolean): Float {
-                val direction = if (isTop) -1 else 1
-                return amplitude * direction * sin(stretch * x - xShift) + 
-                       (if (isTop) amplitude else size.height - amplitude)
-            }
-
-            fun sinX(y: Float, isRight: Boolean): Float {
-                val direction = if (isRight) -1 else 1
-                return amplitude * direction * sin(stretch * y - xShift) +
-                       (if (isRight) size.width - amplitude else amplitude)
-            }
-
-            val segmentLength = wl / 10f
-            val numHorizontalSegments = (size.width / segmentLength).roundToInt()
-            val numVerticalSegments = (size.height / segmentLength).roundToInt()
-
-            // Pre-calculate corner points to ensure proper alignment
-            val topLeftY = if (spec.topWavy) sinY(0f, true) else 0f
-            val topLeftX = if (spec.leftWavy) sinX(0f, false) else 0f
-            val topRightY = if (spec.topWavy) sinY(size.width, true) else 0f
-            val topRightX = if (spec.rightWavy) sinX(0f, true) else size.width
-            val bottomRightY = if (spec.bottomWavy) sinY(size.width, false) else size.height
-            val bottomRightX = if (spec.rightWavy) sinX(size.height, true) else size.width
-            val bottomLeftY = if (spec.bottomWavy) sinY(0f, false) else size.height
-            val bottomLeftX = if (spec.leftWavy) sinX(size.height, false) else 0f
-
-            val path = Path().apply {
-                // Start at top-left
-                moveTo(topLeftX, topLeftY)
-
-                // Draw top edge (left to right)
-                var x = topLeftX
-                for (segment in 1..numHorizontalSegments) {
-                    x = min(x + segmentLength, topRightX)
-                    if (x < topRightX) {
-                        val y = if (spec.topWavy) sinY(x, true) else 0f
-                        lineTo(x, y)
-                    }
-                }
-                
-                // Ensure we connect exactly to the top-right corner
-                lineTo(topRightX, topRightY)
-
-                // Draw right edge (top to bottom)
-                var y = topRightY
-                val rightEdgePoints = mutableListOf<Pair<Float, Float>>()
-                
-                for (segment in 1..numVerticalSegments) {
-                    y = min(y + segmentLength, bottomRightY)
-                    if (y < bottomRightY) {
-                        val rawX = sinX(y, true)
-                        rightEdgePoints.add(Pair(rawX, y))
-                    }
-                }
-                
-                rightEdgePoints.forEach { (rawX, pointY) ->
-                    if (spec.rightWavy) {
-                        lineTo(rawX, pointY)
-                    } else {
-                        lineTo(size.width, pointY)
-                    }
-                }
-                
-                // Ensure we connect exactly to the bottom-right corner
-                lineTo(bottomRightX, bottomRightY)
-
-                // Draw bottom edge (right to left)
-                x = bottomRightX
-                for (segment in 1..numHorizontalSegments) {
-                    x = max(x - segmentLength, bottomLeftX)
-                    if (x > bottomLeftX) {
-                        val y = if (spec.bottomWavy) sinY(x, false) else size.height
-                        lineTo(x, y)
-                    }
-                }
-                
-                lineTo(bottomLeftX, bottomLeftY)
-
-                // Draw left edge (bottom to top)
-                y = bottomLeftY
-                val leftEdgePoints = mutableListOf<Pair<Float, Float>>()
-                
-                for (segment in 1..numVerticalSegments) {
-                    y = max(y - segmentLength, topLeftY)
-                    if (y > topLeftY) {
-                        val rawX = sinX(y, false)
-                        leftEdgePoints.add(Pair(rawX, y))
-                    }
-                }
-                
-                leftEdgePoints.forEach { (rawX, pointY) ->
-                    if (spec.leftWavy) {
-                        lineTo(rawX, pointY)
-                    } else {
-                        lineTo(0f, pointY)
-                    }
-                }
-                
-                // Close the path by returning to the starting point
-                lineTo(topLeftX, topLeftY)
-                close()
-            }
-
-            if (filled) {
+            if (style is WavyBoxStyle.FilledWithBrush) {
                 drawPath(
                     path = path,
-                    color = fillColor
+                    brush = style.brush
+                )
+            } else if (style is WavyBoxStyle.FilledWithColor) {
+                drawPath(
+                    path = path,
+                    color = style.color
                 )
             }
-            
+
+            // Draw stroke
             drawPath(
                 path = path,
-                color = color,
-                style = Stroke(width = stroke)
+                color = style.strokeColor,
+                style = Stroke(width = style.strokeWidth.toPx())
             )
         }
-        
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(crestHeight + strokeWidth),
+                .padding(spec.crestHeight + style.strokeWidth),
             contentAlignment = Alignment.Center
         ) {
             content()
         }
     }
+}
+
+/**
+ * Creates a path for a wavy box using the addWavyPathSegment utility
+ */
+private fun createWavyBoxPath(
+    size: androidx.compose.ui.geometry.Size,
+    spec: WavyBoxSpec,
+    wave: Float,
+    crestHeight: Dp,
+    waveLength: Dp
+): Path {
+    val path = Path()
+
+    // Pre-calculate corner points
+    val topLeftCorner = Offset(0f, 0f)
+    val topRightCorner = Offset(size.width, 0f)
+    val bottomRightCorner = Offset(size.width, size.height)
+    val bottomLeftCorner = Offset(0f, size.height)
+
+    // Start at top-left corner
+    path.moveTo(topLeftCorner.x, topLeftCorner.y)
+
+    // Top edge (left to right)
+    if (spec.topWavy) {
+        wavyPathSegment(
+            existingPath = path,
+            animationProgress = wave,
+            crestHeight = crestHeight,
+            waveLength = waveLength,
+            startPoint = topLeftCorner,
+            endPoint = topRightCorner,
+        )
+    } else {
+        path.lineTo(topRightCorner.x, topRightCorner.y)
+    }
+
+    // Right edge (top to bottom)
+    if (spec.rightWavy) {
+        wavyPathSegment(
+            existingPath = path,
+            animationProgress = wave,
+            crestHeight = crestHeight,
+            waveLength = waveLength,
+            startPoint = topRightCorner,
+            endPoint = bottomRightCorner,
+        )
+    } else {
+        path.lineTo(bottomRightCorner.x, bottomRightCorner.y)
+    }
+
+    // Bottom edge (right to left)
+    if (spec.bottomWavy) {
+        wavyPathSegment(
+            existingPath = path,
+            animationProgress = wave,
+            crestHeight = crestHeight,
+            waveLength = waveLength,
+            startPoint = bottomRightCorner,
+            endPoint = bottomLeftCorner,
+        )
+    } else {
+        path.lineTo(bottomLeftCorner.x, bottomLeftCorner.y)
+    }
+
+    // Left edge (bottom to top)
+    if (spec.leftWavy) {
+        wavyPathSegment(
+            existingPath = path,
+            animationProgress = wave,
+            crestHeight = crestHeight,
+            waveLength = waveLength,
+            startPoint = bottomLeftCorner,
+            endPoint = topLeftCorner,
+        )
+    } else {
+        path.lineTo(topLeftCorner.x, topLeftCorner.y)
+    }
+
+    path.close()
+    return path
+}
+
+/**
+ * A simplified version of WavyBox that acts as a loading indicator with a gradient fill
+ */
+@Composable
+fun WavyLoadingIndicator(
+    modifier: Modifier = Modifier,
+    crestHeight: Dp = 4.dp,
+    waveLength: Dp = 80.dp,
+    gradientColors: List<Color> = listOf(Color.Blue, Color.Cyan),
+    animationDurationMillis: Int = 1000
+) {
+    val gradientBrush = Brush.linearGradient(
+        colors = gradientColors,
+        start = Offset(0f, Float.POSITIVE_INFINITY),
+        end = Offset(0f, 0f)
+    )
+
+    WavyBox(
+        spec = WavyBoxSpec(
+            topWavy = true,
+            rightWavy = false,
+            bottomWavy = false,
+            leftWavy = false,
+            crestHeight = crestHeight,
+            waveLength = waveLength,
+        ),
+        style = WavyBoxStyle.FilledWithBrush(
+            brush = gradientBrush,
+            strokeWidth = 0.dp,
+            strokeColor = Color.Transparent
+        ),
+        modifier = modifier,
+        animationDurationMillis = animationDurationMillis
+    )
+}
+
+@Immutable
+sealed class WavyBoxStyle {
+    abstract val strokeWidth: Dp
+    abstract val strokeColor: Color
+
+    @Immutable
+    data class FilledWithBrush(
+        val brush: Brush,
+        override val strokeWidth: Dp,
+        override val strokeColor: Color
+    ) : WavyBoxStyle()
+
+    @Immutable
+    data class FilledWithColor(
+        val color: Color,
+        override val strokeWidth: Dp,
+        override val strokeColor: Color
+    ) : WavyBoxStyle()
+
+    @Immutable
+    data class Outlined(
+        override val strokeWidth: Dp,
+        override val strokeColor: Color
+    ) : WavyBoxStyle()
 }
 
 @Preview
@@ -203,13 +244,16 @@ fun WavyBoxOutlinedPreview() {
                 topWavy = true,
                 rightWavy = false,
                 bottomWavy = true,
-                leftWavy = false
+                leftWavy = false,
+                crestHeight = 6.dp
+            ),
+            style = WavyBoxStyle.Outlined(
+                strokeColor = Color.Black,
+                strokeWidth = 2.dp
             ),
             modifier = Modifier
                 .size(180.dp)
                 .padding(16.dp),
-            color = Color.Blue,
-            crestHeight = 6.dp
         ) {
             Text("Wavy Box")
         }
@@ -229,14 +273,47 @@ fun WavyBoxFilledPreview() {
                 topWavy = true,
                 rightWavy = false,
                 bottomWavy = true,
-                leftWavy = false
+                leftWavy = false,
+                crestHeight = 6.dp,
+            ),
+            style = WavyBoxStyle.FilledWithColor(
+                color = Color.Cyan,
+                strokeWidth = 0.dp,
+                strokeColor = Color.Transparent
             ),
             modifier = Modifier
                 .size(180.dp)
                 .padding(16.dp),
-            color = Color.Blue,
-            filled = true,
-            crestHeight = 6.dp
+        ) {
+            Text("Filled Wavy Box")
+        }
+    }
+}
+
+@Preview
+@Composable
+fun WavyBoxCornerFilledPreview() {
+    Surface(
+        modifier = Modifier
+            .size(200.dp),
+        color = Color.White,
+    ) {
+        WavyBox(
+            spec = WavyBoxSpec(
+                topWavy = true,
+                rightWavy = true,
+                bottomWavy = true,
+                leftWavy = false,
+                crestHeight = 6.dp,
+            ),
+            style = WavyBoxStyle.FilledWithColor(
+                color = Color.Cyan,
+                strokeWidth = 0.dp,
+                strokeColor = Color.Transparent
+            ),
+            modifier = Modifier
+                .size(180.dp)
+                .padding(16.dp),
         ) {
             Text("Filled Wavy Box")
         }
@@ -256,13 +333,17 @@ fun WavyBoxAllWavesPreview() {
                 topWavy = true,
                 rightWavy = true,
                 bottomWavy = true,
-                leftWavy = true
+                leftWavy = true,
+                crestHeight = 6.dp,
+            ),
+            style = WavyBoxStyle.FilledWithColor(
+                color = Color.Cyan,
+                strokeWidth = 0.dp,
+                strokeColor = Color.Transparent
             ),
             modifier = Modifier
                 .size(180.dp)
                 .padding(16.dp),
-            color = Color.Blue,
-            crestHeight = 6.dp
         ) {
             Text("Wavy Box")
         }
@@ -282,16 +363,36 @@ fun WavyBoxNoWavesPreview() {
                 topWavy = false,
                 rightWavy = false,
                 bottomWavy = false,
-                leftWavy = false
+                leftWavy = false,
+                crestHeight = 6.dp,
+            ),
+            style = WavyBoxStyle.FilledWithColor(
+                color = Color.Cyan,
+                strokeWidth = 0.dp,
+                strokeColor = Color.Transparent
             ),
             modifier = Modifier
                 .size(180.dp)
                 .padding(16.dp),
-            color = Color.Blue,
-            crestHeight = 6.dp
         ) {
             Text("Wavy Box")
         }
+    }
+}
+
+@Preview
+@Composable
+fun WavyLoadingIndicatorPreview() {
+    Surface(
+        modifier = Modifier
+            .size(200.dp)
+            .padding(16.dp),
+        color = Color.White,
+    ) {
+        WavyLoadingIndicator(
+            modifier = Modifier.fillMaxSize(),
+            crestHeight = 8.dp
+        )
     }
 }
 
@@ -301,7 +402,6 @@ data class WavyBoxSpec(
     val rightWavy: Boolean,
     val bottomWavy: Boolean,
     val leftWavy: Boolean,
+    val crestHeight: Dp = 4.dp,
+    val waveLength: Dp = 80.dp,
 )
-
-private const val PI = Math.PI.toFloat()
-private fun Int.pi() = this * PI

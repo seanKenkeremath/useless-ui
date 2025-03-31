@@ -25,6 +25,7 @@ import com.kenkeremath.uselessui.waves.WavyBox
 import com.kenkeremath.uselessui.waves.WavyLine
 import com.kenkeremath.uselessui.waves.WavyLoadingIndicator
 import com.kenkeremath.uselessui.waves.WavyBoxSpec
+import com.kenkeremath.uselessui.waves.WavyBoxStyle
 
 @Composable
 fun WavesDemoScreen() {
@@ -55,9 +56,9 @@ fun WavesDemoScreen() {
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text("Centered Wavy Line with Custom Parameters")
                 Box(
                     modifier = Modifier
@@ -92,9 +93,9 @@ fun WavesDemoScreen() {
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text("Tall Loading Indicator")
                 Box(
                     modifier = Modifier
@@ -107,9 +108,9 @@ fun WavesDemoScreen() {
                         crestHeight = 20.dp
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text("Centered Loading Indicator")
                 Box(
                     modifier = Modifier
@@ -119,7 +120,7 @@ fun WavesDemoScreen() {
                 ) {
                     WavyLoadingIndicator(
                         modifier = Modifier.fillMaxSize(),
-                        centerWave = true
+//                        centerWave = true
                     )
                 }
             }
@@ -142,11 +143,14 @@ fun WavesDemoScreen() {
                             topWavy = true,
                             rightWavy = false,
                             bottomWavy = true,
-                            leftWavy = false
+                            leftWavy = false,
+                            crestHeight = 6.dp,
+                        ),
+                        style = WavyBoxStyle.Outlined(
+                            strokeWidth = 2.dp,
+                            strokeColor = MaterialTheme.colorScheme.primary
                         ),
                         modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.primary,
-                        crestHeight = 6.dp
                     ) {
                         Text(
                             "Horizontal\nWaves",
@@ -154,9 +158,9 @@ fun WavesDemoScreen() {
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text("Vertical Waves Only (Left & Right)")
                 Box(
                     modifier = Modifier
@@ -168,12 +172,15 @@ fun WavesDemoScreen() {
                             topWavy = false,
                             rightWavy = true,
                             bottomWavy = false,
-                            leftWavy = true
+                            leftWavy = true,
+                            crestHeight = 6.dp,
+                        ),
+                        style = WavyBoxStyle.FilledWithColor(
+                            strokeWidth = 2.dp,
+                            strokeColor = Color(0xFF6200EA),
+                            color = Color(0x336200EA)
                         ),
                         modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.secondary,
-                        filled = true,
-                        crestHeight = 6.dp
                     ) {
                         Text(
                             "Vertical\nWaves",
@@ -181,9 +188,9 @@ fun WavesDemoScreen() {
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text("All Sides Wavy")
                 Box(
                     modifier = Modifier
@@ -195,14 +202,16 @@ fun WavesDemoScreen() {
                             topWavy = true,
                             rightWavy = true,
                             bottomWavy = true,
-                            leftWavy = true
+                            leftWavy = true,
+                            crestHeight = 8.dp,
+                            waveLength = 60.dp
+                        ),
+                        style = WavyBoxStyle.FilledWithColor(
+                            strokeWidth = 2.dp,
+                            strokeColor = Color(0xFF6200EA),
+                            color = Color(0x336200EA)
                         ),
                         modifier = Modifier.fillMaxSize(),
-                        color = Color(0xFF6200EA),
-                        filled = true,
-                        fillColor = Color(0x336200EA),
-                        crestHeight = 8.dp,
-                        waveLength = 60.dp,
                         animationDurationMillis = 1500
                     ) {
                         Text(
@@ -212,9 +221,9 @@ fun WavesDemoScreen() {
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text("Alternating Sides (Top & Left)")
                 Box(
                     modifier = Modifier
@@ -226,14 +235,16 @@ fun WavesDemoScreen() {
                             topWavy = true,
                             rightWavy = false,
                             bottomWavy = false,
-                            leftWavy = true
+                            leftWavy = true,
+                            crestHeight = 10.dp,
+                            waveLength = 50.dp
+                        ),
+                        style = WavyBoxStyle.FilledWithColor(
+                            strokeWidth = 2.dp,
+                            strokeColor = Color(0xFF6200EA),
+                            color = Color(0x336200EA)
                         ),
                         modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.tertiary,
-                        filled = true,
-                        crestHeight = 10.dp,
-                        waveLength = 50.dp,
-                        strokeWidth = 3.dp
                     ) {
                         Text(
                             "Top & Left\nWavy",
@@ -241,7 +252,7 @@ fun WavesDemoScreen() {
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text("Alternating Sides (Bottom & Right)")
@@ -255,14 +266,16 @@ fun WavesDemoScreen() {
                             topWavy = false,
                             rightWavy = true,
                             bottomWavy = true,
-                            leftWavy = false
+                            leftWavy = false,
+                            crestHeight = 10.dp,
+                            waveLength = 50.dp
+                        ),
+                        style = WavyBoxStyle.FilledWithColor(
+                            strokeWidth = 2.dp,
+                            strokeColor = Color(0xFF6200EA),
+                            color = Color(0x336200EA)
                         ),
                         modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.tertiary,
-                        filled = true,
-                        crestHeight = 10.dp,
-                        waveLength = 50.dp,
-                        strokeWidth = 3.dp
                     ) {
                         Text(
                             "Bottom & Right\nWavy",
@@ -272,7 +285,7 @@ fun WavesDemoScreen() {
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text("No Waves (Regular Box)")
                 Box(
                     modifier = Modifier
@@ -284,13 +297,15 @@ fun WavesDemoScreen() {
                             topWavy = false,
                             rightWavy = false,
                             bottomWavy = false,
-                            leftWavy = false
+                            leftWavy = false,
+                            crestHeight = 6.dp,
+                        ),
+                        style = WavyBoxStyle.FilledWithColor(
+                            strokeWidth = 2.dp,
+                            strokeColor = Color.Gray,
+                            color = Color.LightGray
                         ),
                         modifier = Modifier.fillMaxSize(),
-                        color = Color.Gray,
-                        filled = true,
-                        fillColor = Color.LightGray,
-                        strokeWidth = 2.dp
                     ) {
                         Text(
                             "Regular Box\n(No Waves)",
