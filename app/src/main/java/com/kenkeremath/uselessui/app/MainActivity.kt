@@ -32,6 +32,7 @@ import com.kenkeremath.uselessui.app.navigation.NavRoutes
 import com.kenkeremath.uselessui.app.theme.UselessUITheme
 import com.kenkeremath.uselessui.app.ui.screens.shatter.ShatterPagerDemoScreen
 import com.kenkeremath.uselessui.app.ui.screens.shatter.ShatterableLayoutDemoScreen
+import com.kenkeremath.uselessui.app.ui.screens.waves.WavesDemoScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +86,9 @@ fun MainScreen() {
             composable(NavRoutes.ShatterPagerDemo.route) {
                 ShatterPagerDemoScreen()
             }
+            composable(NavRoutes.WavesDemo.route) {
+                WavesDemoScreen()
+            }
         }
     }
 }
@@ -122,6 +126,16 @@ fun DemoListScreen(
                 .fillMaxWidth()
                 .clickable { onDemoSelected(NavRoutes.ShatterPagerDemo.route) }
         )
+        
+        HorizontalDivider()
+        
+        ListItem(
+            headlineContent = { Text("Wave Components Demo") },
+            supportingContent = { Text("Animated wave-based UI components") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onDemoSelected(NavRoutes.WavesDemo.route) }
+        )
     }
 }
 
@@ -133,6 +147,7 @@ private fun getScreenTitle(route: String?): String {
         NavRoutes.DemoList.route -> "Useless UI Demos"
         NavRoutes.ShatterableLayoutDemo.route -> "ShatterableLayout Demo"
         NavRoutes.ShatterPagerDemo.route -> "ShatterPager Demo"
+        NavRoutes.WavesDemo.route -> "Wave Components Demo"
         else -> "Useless UI Demos"
     }
 }
