@@ -37,6 +37,9 @@ dependencies {
 
 ### Wavy Components
 
+Note: In these screenshots the "jump" is just coming from the GIF repeating. 
+These components are designed to seamlessly repeat the wave pattern.
+
 |                                                |                                                |
 |------------------------------------------------|------------------------------------------------|
 | <img src="images/waves_demo2.gif" width="300"> | <img src="images/waves_demo1.gif" width="300"> |
