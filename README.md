@@ -56,7 +56,7 @@ This library also includes a `wavyPathSegment` function you can use in Path to d
 
 ```
 dependencies {
-    implementation("io.github.seankenkeremath:waves:0.1.0") // Replace with latest version above
+    implementation("io.github.seankenkeremath:waves:0.1.1") // Replace with latest version above
 }
 ```
 
