@@ -120,7 +120,6 @@ fun WavesDemoScreen() {
                 ) {
                     WavyLoadingIndicator(
                         modifier = Modifier.fillMaxSize(),
-//                        centerWave = true
                     )
                 }
             }
@@ -177,14 +176,15 @@ fun WavesDemoScreen() {
                         ),
                         style = WavyBoxStyle.FilledWithColor(
                             strokeWidth = 2.dp,
-                            strokeColor = Color(0xFF6200EA),
-                            color = Color(0x336200EA)
+                            strokeColor = MaterialTheme.colorScheme.tertiary,
+                            color = MaterialTheme.colorScheme.tertiaryContainer
                         ),
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         Text(
                             "Vertical\nWaves",
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
                 }
@@ -208,8 +208,8 @@ fun WavesDemoScreen() {
                         ),
                         style = WavyBoxStyle.FilledWithColor(
                             strokeWidth = 2.dp,
-                            strokeColor = Color(0xFF6200EA),
-                            color = Color(0x336200EA)
+                            strokeColor = MaterialTheme.colorScheme.tertiary,
+                            color = MaterialTheme.colorScheme.tertiaryContainer
                         ),
                         modifier = Modifier.fillMaxSize(),
                         animationDurationMillis = 1500
@@ -217,7 +217,8 @@ fun WavesDemoScreen() {
                         Text(
                             "All Sides\nWavy",
                             textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
                 }
@@ -241,14 +242,15 @@ fun WavesDemoScreen() {
                         ),
                         style = WavyBoxStyle.FilledWithColor(
                             strokeWidth = 2.dp,
-                            strokeColor = Color(0xFF6200EA),
-                            color = Color(0x336200EA)
+                            strokeColor = MaterialTheme.colorScheme.tertiary,
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
                         ),
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         Text(
                             "Top & Left\nWavy",
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
                 }
@@ -272,14 +274,15 @@ fun WavesDemoScreen() {
                         ),
                         style = WavyBoxStyle.FilledWithColor(
                             strokeWidth = 2.dp,
-                            strokeColor = Color(0xFF6200EA),
-                            color = Color(0x336200EA)
+                            strokeColor = MaterialTheme.colorScheme.tertiary,
+                            color = MaterialTheme.colorScheme.tertiaryContainer
                         ),
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         Text(
                             "Bottom & Right\nWavy",
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
                 }
@@ -303,13 +306,14 @@ fun WavesDemoScreen() {
                         style = WavyBoxStyle.FilledWithColor(
                             strokeWidth = 2.dp,
                             strokeColor = Color.Gray,
-                            color = Color.LightGray
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                         ),
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         Text(
                             "Regular Box\n(No Waves)",
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
                 }
