@@ -80,8 +80,8 @@ fun WavesDemoScreen() {
                     WavyLine(
                         modifier = Modifier.fillMaxSize(),
                         centerWave = true,
-                        crestHeight = 12.dp,
-                        waveLength = 60.dp,
+                        crestHeight = 4.dp,
+                        waveLength = 30.dp,
                         strokeWidth = 3.dp,
                         color = MaterialTheme.colorScheme.secondary,
                         animationDurationMillis = 1500
@@ -115,8 +115,8 @@ fun WavesDemoScreen() {
                             rightWavy = false,
                             bottomWavy = false,
                             leftWavy = false,
-                            crestHeight = 12.dp,
-                            waveLength = 80.dp
+                            crestHeight = 6.dp,
+                            waveLength = 60.dp
                         ),
                         style = WavyBoxStyle.FilledWithBrush(
                             brush = gradientBrush,
@@ -210,8 +210,8 @@ fun WavesDemoScreen() {
                             rightWavy = true,
                             bottomWavy = true,
                             leftWavy = true,
-                            crestHeight = 8.dp,
-                            waveLength = 60.dp
+                            crestHeight = 4.dp,
+                            waveLength = 30.dp
                         ),
                         style = WavyBoxStyle.FilledWithColor(
                             strokeWidth = 2.dp,
@@ -245,8 +245,8 @@ fun WavesDemoScreen() {
                             rightWavy = false,
                             bottomWavy = false,
                             leftWavy = true,
-                            crestHeight = 10.dp,
-                            waveLength = 50.dp
+                            crestHeight = 6.dp,
+                            waveLength = 40.dp
                         ),
                         style = WavyBoxStyle.FilledWithColor(
                             strokeWidth = 2.dp,
@@ -278,8 +278,8 @@ fun WavesDemoScreen() {
                             rightWavy = true,
                             bottomWavy = true,
                             leftWavy = false,
-                            crestHeight = 10.dp,
-                            waveLength = 50.dp
+                            crestHeight = 6.dp,
+                            waveLength = 40.dp
                         ),
                         style = WavyBoxStyle.FilledWithColor(
                             strokeWidth = 2.dp,
@@ -340,7 +340,7 @@ fun WavesDemoScreen() {
                     val infiniteTransition = rememberInfiniteTransition()
                     val animatedCrestHeight by infiniteTransition.animateFloat(
                         initialValue = 0f,
-                        targetValue = 30f,
+                        targetValue = 15f,
                         animationSpec = infiniteRepeatable(
                             animation = tween(1000, easing = LinearEasing),
                             repeatMode = RepeatMode.Reverse
@@ -354,7 +354,7 @@ fun WavesDemoScreen() {
                             bottomWavy = true,
                             leftWavy = false,
                             crestHeight = animatedCrestHeight.dp,
-                            waveLength = 60.dp
+                            waveLength = 40.dp
                         ),
                         style = WavyBoxStyle.FilledWithColor(
                             strokeWidth = 2.dp,

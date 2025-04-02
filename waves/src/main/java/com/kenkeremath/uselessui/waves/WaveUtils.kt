@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Density
 import kotlin.math.atan2
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -20,8 +21,8 @@ import kotlin.math.sqrt
  *
  * @param animationProgress Progress of the wave animation (0f to 1f). Controls the phase shift
  *                          of the sine wave, creating the animation effect when varied over time.
- * @param crestHeight Height of the wave crests in dp. Controls the amplitude of the sine wave.
- * @param waveLength Length of each complete wave cycle in dp. Controls the frequency of the sine wave.
+ * @param crestHeightPx Height of the wave crests in pixels. Controls the amplitude of the sine wave.
+ * @param waveLengthPx Length of each complete wave cycle in pixels. Controls the frequency of the sine wave.
  * @param startPoint Starting point of the wavy path segment.
  * @param endPoint Ending point of the wavy path segment.
  * @param existingPath Optional existing path to add the wavy segment to. If null, a new path will be created.
@@ -29,8 +30,8 @@ import kotlin.math.sqrt
  */
 fun wavyPathSegment(
     animationProgress: Float,
-    crestHeight: Dp,
-    waveLength: Dp,
+    crestHeightPx: Float,
+    waveLengthPx: Float,
     startPoint: Offset,
     endPoint: Offset,
     existingPath: Path? = null
@@ -44,10 +45,6 @@ fun wavyPathSegment(
     
     // Calculate the angle between points
     val angle = atan2(dy, dx)
-    
-    // Convert parameters to pixels
-    val amplitudePx = crestHeight.value
-    val waveLengthPx = waveLength.value
     
     // Calculate wave parameters
     val stretch = 2f * PI / waveLengthPx
@@ -71,14 +68,14 @@ fun wavyPathSegment(
     // Add intermediate points
     for (i in 1..numSegments) {
         val x = min(i * segmentLength, distance)
-        val y = amplitudePx * sin(stretch * x - xShift)
+        val y = crestHeightPx * sin(stretch * x - xShift)
         points.add(Offset(x, y))
     }
     
     // Ensure we reach the exact end point
     if (numSegments * segmentLength < distance) {
         val x = distance
-        val y = amplitudePx * sin(stretch * x - xShift)
+        val y = crestHeightPx * sin(stretch * x - xShift)
         points.add(Offset(x, y))
     }
     
@@ -99,4 +96,31 @@ fun wavyPathSegment(
     return path
 }
 
+// Helper extension function to convert Dp to pixels
+private fun Dp.toPx(density: Float): Float {
+    return this.value * density
+}
+
 private const val PI = Math.PI.toFloat()
+
+/**
+ * Convenience function that accepts Dp values and converts them to pixels before creating the wavy path.
+ */
+fun wavyPathSegment(
+    animationProgress: Float,
+    crestHeight: Dp,
+    waveLength: Dp,
+    startPoint: Offset,
+    endPoint: Offset,
+    existingPath: Path? = null,
+    density: Density
+): Path {
+    return wavyPathSegment(
+        animationProgress = animationProgress,
+        crestHeightPx = with(density) { crestHeight.toPx() },
+        waveLengthPx = with(density) { waveLength.toPx() },
+        startPoint = startPoint,
+        endPoint = endPoint,
+        existingPath = existingPath
+    )
+}

@@ -23,7 +23,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -45,6 +47,8 @@ fun WavyBox(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit = {}
 ) {
+    val density = LocalDensity.current
+    
     Box(modifier = modifier) {
         Canvas(
             modifier = Modifier.fillMaxSize()
@@ -54,7 +58,8 @@ fun WavyBox(
                 spec = spec,
                 progress = progress,
                 crestHeight = spec.crestHeight,
-                waveLength = spec.waveLength
+                waveLength = spec.waveLength,
+                density = density
             )
 
             if (style is WavyBoxStyle.FilledWithBrush) {
@@ -132,7 +137,8 @@ private fun createWavyBoxPath(
     spec: WavyBoxSpec,
     progress: Float,
     crestHeight: Dp,
-    waveLength: Dp
+    waveLength: Dp,
+    density: Density
 ): Path {
     val path = Path()
 
@@ -154,6 +160,7 @@ private fun createWavyBoxPath(
             waveLength = waveLength,
             startPoint = topLeftCorner,
             endPoint = topRightCorner,
+            density = density
         )
     } else {
         path.lineTo(topRightCorner.x, topRightCorner.y)
@@ -168,6 +175,7 @@ private fun createWavyBoxPath(
             waveLength = waveLength,
             startPoint = topRightCorner,
             endPoint = bottomRightCorner,
+            density = density
         )
     } else {
         path.lineTo(bottomRightCorner.x, bottomRightCorner.y)
@@ -182,6 +190,7 @@ private fun createWavyBoxPath(
             waveLength = waveLength,
             startPoint = bottomRightCorner,
             endPoint = bottomLeftCorner,
+            density = density
         )
     } else {
         path.lineTo(bottomLeftCorner.x, bottomLeftCorner.y)
@@ -196,6 +205,7 @@ private fun createWavyBoxPath(
             waveLength = waveLength,
             startPoint = bottomLeftCorner,
             endPoint = topLeftCorner,
+            density = density
         )
     } else {
         path.lineTo(topLeftCorner.x, topLeftCorner.y)

@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -44,17 +45,23 @@ fun WavyLine(
     strokeWidth: Dp = 2.dp,
     centerWave: Boolean = false,
 ) {
+    val density = LocalDensity.current
+    
     Canvas(
         modifier = modifier
     ) {
         val startPoint = Offset(0f, if (centerWave) size.height / 2 else crestHeight.toPx())
         val endPoint = Offset(size.width, if (centerWave) size.height / 2 else crestHeight.toPx())
         
+        // Convert Dp to pixels
+        val crestHeightPx = with(density) { crestHeight.toPx() }
+        val waveLengthPx = with(density) { waveLength.toPx() }
+        
         val path = wavyPathSegment(
             existingPath = null,
             animationProgress = progress,
-            crestHeight = crestHeight,
-            waveLength = waveLength,
+            crestHeightPx = crestHeightPx,
+            waveLengthPx = waveLengthPx,
             startPoint = startPoint,
             endPoint = endPoint,
         )
@@ -152,6 +159,7 @@ fun WavyLineCenteredPreview() {
 @Preview
 @Composable
 fun WavyLineDiagonalPreview() {
+    val density = LocalDensity.current
     Surface(
         modifier = Modifier
             .height(100.dp)
@@ -166,11 +174,15 @@ fun WavyLineDiagonalPreview() {
             val startPoint = Offset(0f, 0f)
             val endPoint = Offset(size.width, size.height)
             
+            // For preview, we need to manually convert Dp to pixels
+            val crestHeightPx = with(density) { 8.dp.toPx() }
+            val waveLengthPx = with(density) { 60.dp.toPx() }
+            
             val path = wavyPathSegment(
                 existingPath = null,
                 animationProgress = 0f,
-                crestHeight = 8.dp,
-                waveLength = 60.dp,
+                crestHeightPx = crestHeightPx,
+                waveLengthPx = waveLengthPx,
                 startPoint = startPoint,
                 endPoint = endPoint,
             )
