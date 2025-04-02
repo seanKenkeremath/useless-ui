@@ -15,15 +15,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kenkeremath.uselessui.waves.WavyBox
 import com.kenkeremath.uselessui.waves.WavyLine
-import com.kenkeremath.uselessui.waves.WavyLoadingIndicator
 import com.kenkeremath.uselessui.waves.WavyBoxSpec
 import com.kenkeremath.uselessui.waves.WavyBoxStyle
 
@@ -79,47 +81,39 @@ fun WavesDemoScreen() {
             }
         }
 
-        // Wavy Loading Indicator Section
-        DemoSection(title = "Wavy Loading Indicator") {
+        // Gradient Wave Effect Section
+        DemoSection(title = "Gradient Wave Effect") {
             Column {
-                Text("Basic Loading Indicator")
+                Text("Gradient Wave")
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(80.dp)
                         .padding(vertical = 8.dp)
                 ) {
-                    WavyLoadingIndicator(
+                    val gradientBrush = remember {
+                        Brush.linearGradient(
+                            colors = listOf(Color.Cyan, Color.Blue),
+                            start = Offset(0f, Float.POSITIVE_INFINITY),
+                            end = Offset(0f, 0f)
+                        )
+                    }
+                    
+                    WavyBox(
+                        spec = WavyBoxSpec(
+                            topWavy = true,
+                            rightWavy = false,
+                            bottomWavy = false,
+                            leftWavy = false,
+                            crestHeight = 12.dp,
+                            waveLength = 80.dp
+                        ),
+                        style = WavyBoxStyle.FilledWithBrush(
+                            brush = gradientBrush,
+                            strokeWidth = 0.dp,
+                            strokeColor = Color.Transparent
+                        ),
                         modifier = Modifier.fillMaxSize()
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("Tall Loading Indicator")
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp)
-                        .padding(vertical = 8.dp)
-                ) {
-                    WavyLoadingIndicator(
-                        modifier = Modifier.fillMaxSize(),
-                        crestHeight = 20.dp
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("Centered Loading Indicator")
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp)
-                        .padding(vertical = 8.dp)
-                ) {
-                    WavyLoadingIndicator(
-                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }

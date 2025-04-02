@@ -12,14 +12,20 @@ import kotlin.math.sqrt
 
 /**
  * Creates a wavy path between two points and adds it to an existing path.
+ * 
+ * This function generates a sine wave path between two arbitrary points in 2D space.
+ * The wave will be properly oriented along the line connecting the two points.
+ * If an existing path is provided, the wavy segment will be added to it; otherwise,
+ * a new path will be created.
  *
- * @param animationProgress Progress of the wave animation (0f to 1f)
- * @param crestHeight Height of the wave crests
- * @param waveLength Length of each wave
- * @param startPoint Starting point of the path
- * @param endPoint Ending point of the path
- * @param existingPath The path to add the wavy segment to (or null to create a new path)
- * @return The path with the wavy segment added
+ * @param animationProgress Progress of the wave animation (0f to 1f). Controls the phase shift
+ *                          of the sine wave, creating the animation effect when varied over time.
+ * @param crestHeight Height of the wave crests in dp. Controls the amplitude of the sine wave.
+ * @param waveLength Length of each complete wave cycle in dp. Controls the frequency of the sine wave.
+ * @param startPoint Starting point of the wavy path segment.
+ * @param endPoint Ending point of the wavy path segment.
+ * @param existingPath Optional existing path to add the wavy segment to. If null, a new path will be created.
+ * @return The path with the wavy segment added. If existingPath was null, returns a new path.
  */
 fun wavyPathSegment(
     animationProgress: Float,

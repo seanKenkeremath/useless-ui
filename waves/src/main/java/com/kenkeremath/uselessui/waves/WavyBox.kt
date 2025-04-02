@@ -27,24 +27,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+/**
+ * A composable that draws a wavy box with manual control over the animation progress.
+ * This state-hoisted version allows for more control over the animation.
+ *
+ * @param progress Animation progress value between 0f and 1f
+ * @param spec Configuration for which sides of the box should be wavy
+ * @param style Style configuration for the box (filled, outlined, etc.)
+ * @param modifier Modifier to be applied to the component
+ * @param content Optional composable content to be displayed inside the box
+ */
 @Composable
 fun WavyBox(
+    progress: Float,
     spec: WavyBoxSpec,
     style: WavyBoxStyle,
     modifier: Modifier = Modifier,
-    animationDurationMillis: Int = 1000,
     content: @Composable () -> Unit = {}
 ) {
-    val infiniteTransition = rememberInfiniteTransition()
-    val wave by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(animationDurationMillis, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        )
-    )
-
     Box(modifier = modifier) {
         Canvas(
             modifier = Modifier.fillMaxSize()
@@ -52,7 +52,7 @@ fun WavyBox(
             val path = createWavyBoxPath(
                 size = size,
                 spec = spec,
-                wave = wave,
+                progress = progress,
                 crestHeight = spec.crestHeight,
                 waveLength = spec.waveLength
             )
@@ -89,12 +89,48 @@ fun WavyBox(
 }
 
 /**
+ * A composable that draws an animated wavy box.
+ *
+ * @param spec Configuration for which sides of the box should be wavy
+ * @param style Style configuration for the box (filled, outlined, etc.)
+ * @param modifier Modifier to be applied to the component
+ * @param animationDurationMillis Duration of one complete wave animation cycle in milliseconds
+ * @param content Optional composable content to be displayed inside the box
+ */
+@Composable
+fun WavyBox(
+    spec: WavyBoxSpec,
+    style: WavyBoxStyle,
+    modifier: Modifier = Modifier,
+    animationDurationMillis: Int = 1000,
+    content: @Composable () -> Unit = {}
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val wave by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(animationDurationMillis, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+
+    WavyBox(
+        progress = wave,
+        spec = spec,
+        style = style,
+        modifier = modifier,
+        content = content
+    )
+}
+
+/**
  * Creates a path for a wavy box using the addWavyPathSegment utility
  */
 private fun createWavyBoxPath(
     size: androidx.compose.ui.geometry.Size,
     spec: WavyBoxSpec,
-    wave: Float,
+    progress: Float,
     crestHeight: Dp,
     waveLength: Dp
 ): Path {
@@ -113,7 +149,7 @@ private fun createWavyBoxPath(
     if (spec.topWavy) {
         wavyPathSegment(
             existingPath = path,
-            animationProgress = wave,
+            animationProgress = progress,
             crestHeight = crestHeight,
             waveLength = waveLength,
             startPoint = topLeftCorner,
@@ -127,7 +163,7 @@ private fun createWavyBoxPath(
     if (spec.rightWavy) {
         wavyPathSegment(
             existingPath = path,
-            animationProgress = wave,
+            animationProgress = progress,
             crestHeight = crestHeight,
             waveLength = waveLength,
             startPoint = topRightCorner,
@@ -141,7 +177,7 @@ private fun createWavyBoxPath(
     if (spec.bottomWavy) {
         wavyPathSegment(
             existingPath = path,
-            animationProgress = wave,
+            animationProgress = progress,
             crestHeight = crestHeight,
             waveLength = waveLength,
             startPoint = bottomRightCorner,
@@ -155,7 +191,7 @@ private fun createWavyBoxPath(
     if (spec.leftWavy) {
         wavyPathSegment(
             existingPath = path,
-            animationProgress = wave,
+            animationProgress = progress,
             crestHeight = crestHeight,
             waveLength = waveLength,
             startPoint = bottomLeftCorner,
@@ -167,42 +203,6 @@ private fun createWavyBoxPath(
 
     path.close()
     return path
-}
-
-/**
- * A simplified version of WavyBox that acts as a loading indicator with a gradient fill
- */
-@Composable
-fun WavyLoadingIndicator(
-    modifier: Modifier = Modifier,
-    crestHeight: Dp = 4.dp,
-    waveLength: Dp = 80.dp,
-    gradientColors: List<Color> = listOf(Color.Blue, Color.Cyan),
-    animationDurationMillis: Int = 1000
-) {
-    val gradientBrush = Brush.linearGradient(
-        colors = gradientColors,
-        start = Offset(0f, Float.POSITIVE_INFINITY),
-        end = Offset(0f, 0f)
-    )
-
-    WavyBox(
-        spec = WavyBoxSpec(
-            topWavy = true,
-            rightWavy = false,
-            bottomWavy = false,
-            leftWavy = false,
-            crestHeight = crestHeight,
-            waveLength = waveLength,
-        ),
-        style = WavyBoxStyle.FilledWithBrush(
-            brush = gradientBrush,
-            strokeWidth = 0.dp,
-            strokeColor = Color.Transparent
-        ),
-        modifier = modifier,
-        animationDurationMillis = animationDurationMillis
-    )
 }
 
 @Immutable
@@ -380,22 +380,19 @@ fun WavyBoxNoWavesPreview() {
     }
 }
 
-@Preview
-@Composable
-fun WavyLoadingIndicatorPreview() {
-    Surface(
-        modifier = Modifier
-            .size(200.dp)
-            .padding(16.dp),
-        color = Color.White,
-    ) {
-        WavyLoadingIndicator(
-            modifier = Modifier.fillMaxSize(),
-            crestHeight = 8.dp
-        )
-    }
-}
-
+/**
+ * Configuration specification for a WavyBox component.
+ * 
+ * This class defines which sides of the box should have a wavy appearance and
+ * controls the visual properties of the waves.
+ *
+ * @property topWavy When true, the top edge of the box will have a wavy appearance
+ * @property rightWavy When true, the right edge of the box will have a wavy appearance
+ * @property bottomWavy When true, the bottom edge of the box will have a wavy appearance
+ * @property leftWavy When true, the left edge of the box will have a wavy appearance
+ * @property crestHeight The height of each wave crest in dp. Controls the amplitude of the waves.
+ * @property waveLength The length of each complete wave cycle in dp. Controls the frequency of the waves.
+ */
 @Immutable
 data class WavyBoxSpec(
     val topWavy: Boolean,

@@ -21,6 +21,64 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+/**
+ * A composable that draws a wavy line with manual control over the animation progress.
+ * This state-hoisted version allows for more control over the animation.
+ *
+ * @param progress Animation progress value between 0f and 1f
+ * @param modifier Modifier to be applied to the component
+ * @param crestHeight The height of each wave crest in dp
+ * @param waveLength The length of each complete wave in dp
+ * @param color The color of the wavy line
+ * @param strokeWidth The width of the line stroke in dp
+ * @param centerWave When true, the wave is centered vertically in the available space.
+ *                   When false, the wave is positioned at the top with crestHeight as offset
+ */
+@Composable
+fun WavyLine(
+    progress: Float,
+    modifier: Modifier = Modifier,
+    crestHeight: Dp = 4.dp,
+    waveLength: Dp = 80.dp,
+    color: Color = Color.Blue,
+    strokeWidth: Dp = 2.dp,
+    centerWave: Boolean = false,
+) {
+    Canvas(
+        modifier = modifier
+    ) {
+        val startPoint = Offset(0f, if (centerWave) size.height / 2 else crestHeight.toPx())
+        val endPoint = Offset(size.width, if (centerWave) size.height / 2 else crestHeight.toPx())
+        
+        val path = wavyPathSegment(
+            existingPath = null,
+            animationProgress = progress,
+            crestHeight = crestHeight,
+            waveLength = waveLength,
+            startPoint = startPoint,
+            endPoint = endPoint,
+        )
+
+        drawPath(
+            path = path,
+            color = color,
+            style = Stroke(width = strokeWidth.toPx())
+        )
+    }
+}
+
+/**
+ * A composable that draws an animated wavy line.
+ *
+ * @param modifier Modifier to be applied to the component
+ * @param crestHeight The height of each wave crest in dp
+ * @param waveLength The length of each complete wave in dp
+ * @param color The color of the wavy line
+ * @param strokeWidth The width of the line stroke in dp
+ * @param centerWave When true, the wave is centered vertically in the available space.
+ *                   When false, the wave is positioned at the top with crestHeight as offset
+ * @param animationDurationMillis Duration of one complete wave animation cycle in milliseconds
+ */
 @Composable
 fun WavyLine(
     modifier: Modifier = Modifier,
@@ -41,27 +99,15 @@ fun WavyLine(
         )
     )
 
-    Canvas(
-        modifier = modifier
-    ) {
-        val startPoint = Offset(0f, if (centerWave) size.height / 2 else crestHeight.toPx())
-        val endPoint = Offset(size.width, if (centerWave) size.height / 2 else crestHeight.toPx())
-        
-        val path = wavyPathSegment(
-            existingPath = null,
-            animationProgress = wave,
-            crestHeight = crestHeight,
-            waveLength = waveLength,
-            startPoint = startPoint,
-            endPoint = endPoint,
-        )
-
-        drawPath(
-            path = path,
-            color = color,
-            style = Stroke(width = strokeWidth.toPx())
-        )
-    }
+    WavyLine(
+        progress = wave,
+        modifier = modifier,
+        crestHeight = crestHeight,
+        waveLength = waveLength,
+        color = color,
+        strokeWidth = strokeWidth,
+        centerWave = centerWave
+    )
 }
 
 @Preview
