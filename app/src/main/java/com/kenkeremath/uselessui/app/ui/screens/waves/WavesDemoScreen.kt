@@ -1,5 +1,11 @@
 package com.kenkeremath.uselessui.app.ui.screens.waves
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +51,7 @@ fun WavesDemoScreen() {
         )
 
         // Wavy Line Section
-        DemoSection(title = "Wavy Line") {
+        DemoSection(title = "WavyLine") {
             Column {
                 Text("Basic Wavy Line")
                 Box(
@@ -120,7 +127,7 @@ fun WavesDemoScreen() {
         }
 
         // Wavy Box Section
-        DemoSection(title = "Wavy Box") {
+        DemoSection(title = "WavyBox") {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -308,6 +315,48 @@ fun WavesDemoScreen() {
                             "Regular Box\n(No Waves)",
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("Animated Crest Height")
+                Box(
+                    modifier = Modifier
+                        .size(180.dp)
+                        .padding(vertical = 8.dp)
+                ) {
+                    val infiniteTransition = rememberInfiniteTransition()
+                    val animatedCrestHeight by infiniteTransition.animateFloat(
+                        initialValue = 0f,
+                        targetValue = 30f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1000, easing = LinearEasing),
+                            repeatMode = RepeatMode.Reverse
+                        )
+                    )
+                    
+                    WavyBox(
+                        spec = WavyBoxSpec(
+                            topWavy = true,
+                            rightWavy = false,
+                            bottomWavy = true,
+                            leftWavy = false,
+                            crestHeight = animatedCrestHeight.dp,
+                            waveLength = 60.dp
+                        ),
+                        style = WavyBoxStyle.FilledWithColor(
+                            strokeWidth = 2.dp,
+                            strokeColor = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        ),
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        Text(
+                            "Animated\nCrest Height",
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
