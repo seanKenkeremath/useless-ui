@@ -34,3 +34,28 @@ dependencies {
 #### Future improvements + optimizations
 * We can avoid creating cropped bitmaps entirely if Compose supports either **1)** `graphicsLayer` animations on Canvas objects (we can crop the parent bitmap in the Canvas) or **2)** cropping inside `graphicsLayer` with an arbitrary path (only simple shapes are currently supported)
 * Capturing of the bitmap and creation of Voronoi cells can be offloaded to a background thread
+
+### Wavy Components
+
+|                                                |                                                |
+|------------------------------------------------|------------------------------------------------|
+| <img src="images/waves_demo2.gif" width="300"> | <img src="images/waves_demo1.gif" width="300"> |
+
+These components give you the building block to create wavy effects in your UI. 
+That includes a normal `WavyLine` as well as a `WavyBox` where any combination of sides can be wavy. 
+The waves are customizable via `WavySpec` which can easily be animated or controlled by the parent Composable.
+`WavyBox` supports several draw styles including via `Brush` or Color.
+
+This library also includes a `wavyPathSegment` function you can use in Path to draw a wave between 2 points for your own custom UI.
+
+#### Installation
+[![](https://img.shields.io/maven-central/v/io.github.seankenkeremath/waves)](https://search.maven.org/artifact/io.github.seankenkeremath/waves)
+
+```
+dependencies {
+    implementation("io.github.seankenkeremath:waves:0.1.0") // Replace with latest version above
+}
+```
+
+#### Future improvements + optimizations
+* I plan to build in support for a corner radius which will make the corners for wavy box look a bit cleaner as separate wave segments converge

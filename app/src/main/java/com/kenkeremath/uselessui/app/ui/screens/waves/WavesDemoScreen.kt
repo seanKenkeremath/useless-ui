@@ -54,6 +54,7 @@ fun WavesDemoScreen() {
         DemoSection(title = "WavyLine") {
             Column {
                 Text("Basic Wavy Line")
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -69,6 +70,7 @@ fun WavesDemoScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text("Centered Wavy Line with Custom Parameters")
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -92,6 +94,7 @@ fun WavesDemoScreen() {
         DemoSection(title = "Gradient Wave Effect") {
             Column {
                 Text("Gradient Wave")
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -133,6 +136,7 @@ fun WavesDemoScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text("Horizontal Waves Only (Top & Bottom)")
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .size(180.dp)
@@ -162,6 +166,7 @@ fun WavesDemoScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text("Vertical Waves Only (Left & Right)")
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .size(180.dp)
@@ -193,6 +198,7 @@ fun WavesDemoScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text("All Sides Wavy")
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .size(180.dp)
@@ -227,6 +233,7 @@ fun WavesDemoScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text("Alternating Sides (Top & Left)")
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .size(180.dp)
@@ -259,6 +266,7 @@ fun WavesDemoScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text("Alternating Sides (Bottom & Right)")
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .size(180.dp)
@@ -291,6 +299,7 @@ fun WavesDemoScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text("No Waves (Regular Box)")
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .size(180.dp)
@@ -322,6 +331,7 @@ fun WavesDemoScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text("Animated Crest Height")
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .size(180.dp)
