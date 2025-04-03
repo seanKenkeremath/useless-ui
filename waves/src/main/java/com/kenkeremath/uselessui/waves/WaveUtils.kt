@@ -68,14 +68,14 @@ fun wavyPathSegment(
     // Add intermediate points
     for (i in 1..numSegments) {
         val x = min(i * segmentLength, distance)
-        val y = crestHeightPx * sin(stretch * x - xShift)
+        val y = getWaveYAtPoint(x, crestHeightPx, waveLengthPx, animationProgress)
         points.add(Offset(x, y))
     }
     
     // Ensure we reach the exact end point
     if (numSegments * segmentLength < distance) {
         val x = distance
-        val y = crestHeightPx * sin(stretch * x - xShift)
+        val y = getWaveYAtPoint(x, crestHeightPx, waveLengthPx, animationProgress)
         points.add(Offset(x, y))
     }
     
@@ -96,9 +96,15 @@ fun wavyPathSegment(
     return path
 }
 
-// Helper extension function to convert Dp to pixels
-private fun Dp.toPx(density: Float): Float {
-    return this.value * density
+internal fun getWaveYAtPoint(
+    x: Float,
+    crestHeightPx: Float,
+    waveLengthPx: Float,
+    progress: Float
+): Float {
+    val stretch = 2f * PI / waveLengthPx
+    val xShift = progress * 2f * PI
+    return crestHeightPx * sin(stretch * x - xShift)
 }
 
 private const val PI = Math.PI.toFloat()

@@ -29,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlin.math.max
 
 /**
  * A composable that draws a wavy box with manual control over the animation progress.
@@ -49,7 +50,7 @@ fun WavyBox(
     content: @Composable () -> Unit = {}
 ) {
     val density = LocalDensity.current
-    
+
     Box(modifier = modifier) {
         Canvas(
             modifier = Modifier.fillMaxSize()
@@ -141,9 +142,9 @@ private fun createWavyBoxPath(
     waveLength: Dp,
     density: Density
 ): Path {
-    val path = Path()
-    // Convert crest height to pixels for offset calculations
+    // Convert crest height + wave length to pixels for offset calculations
     val crestHeightPx = with(density) { crestHeight.toPx() }
+    val waveLengthPx = with(density) { waveLength.toPx() }
 
     // If centerAlongBounds is false, offset the path by crestHeight
     // so the top of the crest touches the bounds
@@ -158,22 +159,37 @@ private fun createWavyBoxPath(
     val bottomRightCorner = Offset(size.width - rightXOffset, size.height - bottomYOffset)
     val bottomLeftCorner = Offset(leftXOffset, size.height - bottomYOffset)
 
-    // Start at top-left corner
-    path.moveTo(topLeftCorner.x, topLeftCorner.y)
 
+    // Since we are starting at the top left corner, we need to make sure the final point
+    // on the left edge will meet back up at the correct position
+    val leftEdgeWaveOffset = if (!spec.leftWavy) 0f else
+        getWaveYAtPoint(
+            x = topLeftCorner.y - bottomLeftCorner.y,
+            progress = progress,
+            crestHeightPx = crestHeightPx,
+            waveLengthPx = waveLengthPx,
+        )
+    val adjustedTopLeft = topLeftCorner.copy(
+        x = max(
+            topLeftCorner.x + leftEdgeWaveOffset,
+            topLeftCorner.x
+        )
+    )
     // Top edge (left to right)
-    if (spec.topWavy) {
+    val path = if (spec.topWavy) {
         wavyPathSegment(
-            existingPath = path,
             animationProgress = progress,
             crestHeight = crestHeight,
             waveLength = waveLength,
-            startPoint = topLeftCorner,
+            startPoint = adjustedTopLeft,
             endPoint = topRightCorner,
             density = density
         )
     } else {
-        path.lineTo(topRightCorner.x, topRightCorner.y)
+        Path().apply {
+            moveTo(adjustedTopLeft.x, adjustedTopLeft.y)
+            lineTo(topRightCorner.x, topRightCorner.y)
+        }
     }
 
     // Right edge (top to bottom)
@@ -445,7 +461,7 @@ fun WavyBoxNoWavesPreview() {
 
 /**
  * Configuration specification for a WavyBox component.
- * 
+ *
  * This class defines which sides of the box should have a wavy appearance and
  * controls the visual properties of the waves.
  *
