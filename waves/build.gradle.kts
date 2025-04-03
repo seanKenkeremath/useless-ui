@@ -55,7 +55,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
-val moduleVersion = "0.1.1"
+val moduleVersion = "0.1.2"
 
 mavenPublishing {
     coordinates(
