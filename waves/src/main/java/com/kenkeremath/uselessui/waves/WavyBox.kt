@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -141,12 +142,21 @@ private fun createWavyBoxPath(
     density: Density
 ): Path {
     val path = Path()
+    // Convert crest height to pixels for offset calculations
+    val crestHeightPx = with(density) { crestHeight.toPx() }
+
+    // If centerAlongBounds is false, offset the path by crestHeight
+    // so the top of the crest touches the bounds
+    val topYOffset = if (spec.topWavy && !spec.centerAlongBounds) crestHeightPx else 0f
+    val bottomYOffset = if (spec.bottomWavy && !spec.centerAlongBounds) crestHeightPx else 0f
+    val leftXOffset = if (spec.leftWavy && !spec.centerAlongBounds) crestHeightPx else 0f
+    val rightXOffset = if (spec.rightWavy && !spec.centerAlongBounds) crestHeightPx else 0f
 
     // Pre-calculate corner points
-    val topLeftCorner = Offset(0f, 0f)
-    val topRightCorner = Offset(size.width, 0f)
-    val bottomRightCorner = Offset(size.width, size.height)
-    val bottomLeftCorner = Offset(0f, size.height)
+    val topLeftCorner = Offset(leftXOffset, topYOffset)
+    val topRightCorner = Offset(size.width - rightXOffset, topYOffset)
+    val bottomRightCorner = Offset(size.width - rightXOffset, size.height - bottomYOffset)
+    val bottomLeftCorner = Offset(leftXOffset, size.height - bottomYOffset)
 
     // Start at top-left corner
     path.moveTo(topLeftCorner.x, topLeftCorner.y)
@@ -332,7 +342,7 @@ fun WavyBoxCornerFilledPreview() {
 
 @Preview
 @Composable
-fun WavyBoxAllWavesPreview() {
+fun WavyBoxAllWavesNotCenteredPreview() {
     Surface(
         modifier = Modifier
             .size(200.dp),
@@ -357,6 +367,49 @@ fun WavyBoxAllWavesPreview() {
         ) {
             Text("Wavy Box")
         }
+        Box(
+            modifier = Modifier
+                .size(200.dp)
+                .padding(16.dp)
+                .border(2.dp, Color.Black)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun WavyBoxAllWavesCenteredPreview() {
+    Surface(
+        modifier = Modifier
+            .size(200.dp),
+        color = Color.White,
+    ) {
+        WavyBox(
+            spec = WavyBoxSpec(
+                topWavy = true,
+                rightWavy = true,
+                bottomWavy = true,
+                leftWavy = true,
+                crestHeight = 6.dp,
+                centerAlongBounds = true
+            ),
+            style = WavyBoxStyle.FilledWithColor(
+                color = Color.Cyan,
+                strokeWidth = 0.dp,
+                strokeColor = Color.Transparent
+            ),
+            modifier = Modifier
+                .size(180.dp)
+                .padding(16.dp),
+        ) {
+            Text("Wavy Box")
+        }
+        Box(
+            modifier = Modifier
+                .size(200.dp)
+                .padding(16.dp)
+                .border(2.dp, Color.Black)
+        )
     }
 }
 
@@ -402,6 +455,8 @@ fun WavyBoxNoWavesPreview() {
  * @property leftWavy When true, the left edge of the box will have a wavy appearance
  * @property crestHeight The height of each wave crest in dp. Controls the amplitude of the waves.
  * @property waveLength The length of each complete wave cycle in dp. Controls the frequency of the waves.
+ * @property centerAlongBounds When true, the waves are centered along the bounds (half of the way will be outside the bounds).
+ *                            When false, the top of the waves will be aligned with the bounds of the view.
  */
 @Immutable
 data class WavyBoxSpec(
@@ -411,4 +466,5 @@ data class WavyBoxSpec(
     val leftWavy: Boolean,
     val crestHeight: Dp = 4.dp,
     val waveLength: Dp = 80.dp,
+    val centerAlongBounds: Boolean = false
 )
