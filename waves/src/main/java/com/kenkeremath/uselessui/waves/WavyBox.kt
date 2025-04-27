@@ -84,10 +84,17 @@ fun WavyBox(
             )
         }
 
+        val additionalPadding = spec.crestHeight + style.strokeWidth
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(spec.crestHeight + style.strokeWidth),
+                .padding(
+                    top = if (spec.topWavy) additionalPadding else 0.dp,
+                    bottom = if (spec.bottomWavy) additionalPadding else 0.dp,
+                    start = if (spec.leftWavy) additionalPadding else 0.dp,
+                    end = if (spec.rightWavy) additionalPadding else 0.dp,
+                ),
             contentAlignment = Alignment.Center
         ) {
             content()

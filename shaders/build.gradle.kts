@@ -1,20 +1,16 @@
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.vanniktech.maven.publish)
 }
 
 android {
-    namespace = "com.kenkeremath.uselessui.app"
+    namespace = "com.kenkeremath.uselessui.shaders"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.kenkeremath.uselessui.app"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -40,19 +36,16 @@ android {
 }
 
 dependencies {
-    implementation(project(":shatterable-layout"))
-    implementation(project(":waves"))
-    implementation(project(":shaders"))
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.compose)
+
+    implementation(libs.jts.core)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -60,4 +53,19 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+val moduleVersion = "0.1.0"
+
+mavenPublishing {
+    coordinates(
+        groupId = project.property("GROUP") as String,
+        artifactId = "shaders",
+        version = moduleVersion
+    )
+
+    pom {
+        name.set("Shaders")
+        description.set("Messing with shaders")
+    }
 }

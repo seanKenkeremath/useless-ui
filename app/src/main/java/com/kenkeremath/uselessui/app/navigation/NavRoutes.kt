@@ -8,4 +8,5 @@ sealed class NavRoutes(val route: String) {
     object ShatterableLayoutDemo : NavRoutes("shatterable_layout_demo")
     object ShatterPagerDemo : NavRoutes("shatter_pager_demo")
     object WavesDemo : NavRoutes("waves_demo")
+    object ShaderDemo : NavRoutes("shader_demo")
 } 
