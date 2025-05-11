@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.vanniktech.maven.publish)
+    id("com.seankenkeremath.uselessui.convention.publish")
 }
 
 android {
@@ -55,17 +56,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
-val moduleVersion = "0.1.2"
-
-mavenPublishing {
-    coordinates(
-        groupId = project.property("GROUP") as String,
-        artifactId = "waves",
-        version = moduleVersion
-    )
-
-    pom {
-        name.set("Waves")
-        description.set("Components for creating wave animations")
-    }
+mavenPublishConfig {
+    description.set("Components for creating wave animations")
+    version.set("0.1.2")
 }

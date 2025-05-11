@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.vanniktech.maven.publish)
+    id("com.seankenkeremath.uselessui.convention.publish")
 }
 
 android {
@@ -55,17 +56,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
-val moduleVersion = "0.1.0"
-
-mavenPublishing {
-    coordinates(
-        groupId = project.property("GROUP") as String,
-        artifactId = "shatterable-layout",
-        version = moduleVersion
-    )
-
-    pom {
-        name.set("ShatterableLayout")
-        description.set("A Compose UI component that can shatter into pieces")
-    }
+mavenPublishConfig {
+    description.set("A Compose UI component that can shatter into pieces")
+    version.set("0.1.0")
 } 
