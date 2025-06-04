@@ -84,10 +84,17 @@ fun WavyBox(
             )
         }
 
+        val additionalPadding = spec.crestHeight + style.strokeWidth
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(spec.crestHeight + style.strokeWidth),
+                .padding(
+                    top = if (spec.topWavy) additionalPadding else style.strokeWidth,
+                    bottom = if (spec.bottomWavy) additionalPadding else style.strokeWidth,
+                    start = if (spec.leftWavy) additionalPadding else style.strokeWidth,
+                    end = if (spec.rightWavy) additionalPadding else style.strokeWidth,
+                ),
             contentAlignment = Alignment.Center
         ) {
             content()
@@ -456,6 +463,12 @@ fun WavyBoxNoWavesPreview() {
         ) {
             Text("Wavy Box")
         }
+        Box(
+            modifier = Modifier
+                .size(200.dp)
+                .padding(16.dp)
+                .border(2.dp, Color.Black)
+        )
     }
 }
 

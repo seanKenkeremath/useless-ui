@@ -1,11 +1,13 @@
 package com.kenkeremath.uselessui.app.ui.screens.waves
 
+import android.os.Build
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,6 +37,8 @@ import com.kenkeremath.uselessui.waves.WavyBox
 import com.kenkeremath.uselessui.waves.WavyLine
 import com.kenkeremath.uselessui.waves.WavyBoxSpec
 import com.kenkeremath.uselessui.waves.WavyBoxStyle
+import androidx.compose.ui.draw.alpha
+import com.kenkeremath.uselessui.waves.DistortionBox
 
 @Composable
 fun WavesDemoScreen() {
@@ -125,6 +129,66 @@ fun WavesDemoScreen() {
                         ),
                         modifier = Modifier.fillMaxSize()
                     )
+                }
+            }
+        }
+
+        // DistortionBox Section
+        DemoSection(title = "DistortionBox") {
+            Column {
+                Text("Shader-based Wave Distortion")
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(vertical = 8.dp)
+                ) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        DistortionBox(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .alpha(0.5f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(MaterialTheme.colorScheme.primaryContainer)
+                            ) {
+                                Text(
+                                    "Distorted Content",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.align(Alignment.Center)
+                                )
+                            }
+                        }
+                    } else {
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "RuntimeShader Not Supported",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = "This effect requires Android 13 (API 33) or higher",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
