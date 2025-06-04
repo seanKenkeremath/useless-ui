@@ -205,6 +205,43 @@ WavyBox(
 )
 ```
 
+##### DistortionBox
+
+```kotlin
+// Basic usage with animation managed by the component
+DistortionBox(
+    modifier = Modifier
+        .fillMaxWidth()
+        .height(200.dp)
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Text(
+            "Distorted Content",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
+}
+
+// With animation state-hoisted to allow control from the parent
+val time = remember { mutableFloatStateOf(0f) }
+DistortionBoxImpl(
+    time = time.value,
+    modifier = Modifier
+        .fillMaxWidth()
+        .height(200.dp)
+) {
+    // Your content here
+}
+```
+
+Note: The `DistortionBox` component requires Android 13 (API 33/Tiramisu) or higher to work as it uses RuntimeShader. The component applies a wave distortion effect to its content using a custom shader.
+
 ##### Custom Path with Wavy Segment
 
 ```kotlin
