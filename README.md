@@ -114,9 +114,9 @@ Controls when the underlying bitmap is captured for the shatter effect:
 Note: In these screenshots the "jump" is just coming from the GIF repeating. 
 These components are designed to seamlessly repeat the wave pattern.
 
-|                                                |                                                |
-|------------------------------------------------|------------------------------------------------|
-| <img src="images/waves_demo2.gif" width="300"> | <img src="images/waves_demo1.gif" width="300"> |
+|                                                |                                                |                                                        | 
+|------------------------------------------------|------------------------------------------------|--------------------------------------------------------| 
+| <img src="images/waves_demo2.gif" width="300"> | <img src="images/waves_demo1.gif" width="300"> | <img src="images/distortion_box_demo.gif" width="300"> | 
 
 These components give you the building block to create wavy effects in your UI. 
 That includes a normal `WavyLine` as well as a `WavyBox` where any combination of sides can be wavy. 
